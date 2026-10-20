@@ -30,14 +30,18 @@ data class CompassUiState(
     val trueNorthEnabled: Boolean = true,
     val hasLocationPermission: Boolean = false,
     val declinationDeg: Float? = null,
-    // --- Sun orientation tab ---
+    // --- Celestial (sun/moon) orientation tab ---
     val hasGameRotation: Boolean = false,
-    val sunModeActive: Boolean = false,
+    val celestialModeActive: Boolean = false,
     val sunAzimuthDeg: Double? = null,
     val sunAltitudeDeg: Double? = null,
-    val sunCalibrated: Boolean = false,
-    /** Gyro-anchored heading after the "phone points at the sun" calibration. */
-    val sunHeadingDeg: Float? = null,
+    val moonAzimuthDeg: Double? = null,
+    val moonAltitudeDeg: Double? = null,
+    /** "sun" or "moon": the body currently available for calibration. */
+    val referenceBody: String? = null,
+    val celestialCalibrated: Boolean = false,
+    /** Gyro-anchored heading after the "phone points at the body" calibration. */
+    val celestialHeadingDeg: Float? = null,
 )
 
 class CompassViewModel(app: Application) : ContainerViewModel(app) {
@@ -52,12 +56,12 @@ class CompassViewModel(app: Application) : ContainerViewModel(app) {
     private var locationJob: Job? = null
     private var lastLocation: Location? = null
 
-    // Sun-orientation mode (gyro-only, no magnetometer).
-    private var sunJobs: List<Job> = emptyList()
+    // Celestial orientation mode (gyro-only, no magnetometer).
+    private var celestialJobs: List<Job> = emptyList()
     private var smoothedGame = 0f
     private var gamePrimed = false
     private var anchorYaw: Float? = null
-    private var anchorSunAz: Double? = null
+    private var anchorBodyAz: Double? = null
 
     private val _uiState = MutableStateFlow(
         CompassUiState(
@@ -124,32 +128,42 @@ class CompassViewModel(app: Application) : ContainerViewModel(app) {
     }
 
     /**
-     * Starts/stops the sun-orientation mode: the game rotation vector (gyro + gravity,
+     * Starts/stops celestial orientation: the game rotation vector (gyro + gravity,
      * no magnetometer) tracks yaw relative to an arbitrary origin, and a once-per-second
-     * tick computes the current Sun azimuth/altitude from the latest GPS fix.
+     * tick computes Sun and Moon azimuth/altitude from the latest GPS fix. The Sun is
+     * preferred when above the horizon, otherwise the Moon is used at night.
      */
-    fun setSunMode(active: Boolean) {
-        sunJobs.forEach { it.cancel() }
-        sunJobs = emptyList()
+    fun setCelestialMode(active: Boolean) {
+        celestialJobs.forEach { it.cancel() }
+        celestialJobs = emptyList()
         anchorYaw = null
-        anchorSunAz = null
+        anchorBodyAz = null
         gamePrimed = false
         if (!active) {
             _uiState.update {
                 it.copy(
-                    sunModeActive = false,
-                    sunCalibrated = false,
-                    sunHeadingDeg = null,
+                    celestialModeActive = false,
+                    celestialCalibrated = false,
+                    celestialHeadingDeg = null,
                     sunAzimuthDeg = null,
                     sunAltitudeDeg = null,
+                    moonAzimuthDeg = null,
+                    moonAltitudeDeg = null,
+                    referenceBody = null,
                 )
             }
             return
         }
-        _uiState.update { it.copy(sunModeActive = true, sunCalibrated = false, sunHeadingDeg = null) }
+        _uiState.update {
+            it.copy(
+                celestialModeActive = true,
+                celestialCalibrated = false,
+                celestialHeadingDeg = null,
+            )
+        }
         val gameSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
         if (gameSensor != null) {
-            sunJobs = sunJobs + viewModelScope.launch {
+            celestialJobs = celestialJobs + viewModelScope.launch {
                 sensorManager.sensorFlow(Sensor.TYPE_GAME_ROTATION_VECTOR).collect { sample ->
                     val yaw = CompassEngine.azimuthFromRotationVector(sample.values)
                     // Game RV yaw starts from an arbitrary origin; seed instead of slew.
@@ -159,47 +173,73 @@ class CompassViewModel(app: Application) : ContainerViewModel(app) {
                         gamePrimed = true
                         yaw
                     }
-                    emitSunHeading()
+                    emitCelestialHeading()
                 }
             }
         }
-        sunJobs = sunJobs + viewModelScope.launch {
+        celestialJobs = celestialJobs + viewModelScope.launch {
             flow {
                 while (true) {
                     emit(System.currentTimeMillis())
                     delay(1_000L)
                 }
-            }.collect { now -> updateSun(now) }
+            }.collect { now -> updateCelestialBodies(now) }
         }
     }
 
-    /** Pin the current phone yaw to the Sun azimuth; the device must point at the Sun. */
-    fun calibrateSunHeading() {
-        val az = _uiState.value.sunAzimuthDeg ?: return
-        if ((_uiState.value.sunAltitudeDeg ?: Double.NaN) <= 0.0) return
+    /** Pin the current phone yaw to the reference body; the device must point at it. */
+    fun calibrateCelestialHeading() {
+        val state = _uiState.value
+        val az = when (state.referenceBody) {
+            BODY_SUN -> state.sunAzimuthDeg
+            BODY_MOON -> state.moonAzimuthDeg
+            else -> null
+        } ?: return
         anchorYaw = smoothedGame
-        anchorSunAz = az
-        emitSunHeading()
+        anchorBodyAz = az
+        emitCelestialHeading()
     }
 
-    fun clearSunCalibration() {
+    fun clearCelestialCalibration() {
         anchorYaw = null
-        anchorSunAz = null
-        _uiState.update { it.copy(sunCalibrated = false, sunHeadingDeg = null) }
+        anchorBodyAz = null
+        _uiState.update {
+            it.copy(celestialCalibrated = false, celestialHeadingDeg = null)
+        }
     }
 
-    private fun updateSun(now: Long) {
+    private fun updateCelestialBodies(now: Long) {
         val location = lastLocation ?: return
         val sun = AstroEngine.sunPosition(now, location.latitude, location.longitude)
-        _uiState.update { it.copy(sunAzimuthDeg = sun.azimuthDeg, sunAltitudeDeg = sun.altitudeDeg) }
-        emitSunHeading()
+        val moon = AstroEngine.moonPosition(now, location.latitude, location.longitude)
+        val body = when {
+            sun.altitudeDeg > 0.0 -> BODY_SUN
+            moon.altitudeDeg > 0.0 -> BODY_MOON
+            else -> null
+        }
+        _uiState.update {
+            it.copy(
+                sunAzimuthDeg = sun.azimuthDeg,
+                sunAltitudeDeg = sun.altitudeDeg,
+                moonAzimuthDeg = moon.azimuthDeg,
+                moonAltitudeDeg = moon.altitudeDeg,
+                referenceBody = body,
+            )
+        }
+        emitCelestialHeading()
     }
 
-    private fun emitSunHeading() {
+    private fun emitCelestialHeading() {
         val baseYaw = anchorYaw ?: return
-        val baseAz = anchorSunAz ?: return
+        val baseAz = anchorBodyAz ?: return
         val heading = CompassEngine.normalize(baseAz.toFloat() + (smoothedGame - baseYaw))
-        _uiState.update { it.copy(sunCalibrated = true, sunHeadingDeg = heading) }
+        _uiState.update { it.copy(celestialCalibrated = true, celestialHeadingDeg = heading) }
+    }
+
+    companion object {
+        private const val NEW_SAMPLE_WEIGHT = 0.18f
+        const val BODY_SUN = "sun"
+        const val BODY_MOON = "moon"
     }
 
     private fun updateDeclination(location: Location) {
@@ -229,9 +269,5 @@ class CompassViewModel(app: Application) : ContainerViewModel(app) {
                 declinationDeg = declination,
             )
         }
-    }
-
-    companion object {
-        private const val NEW_SAMPLE_WEIGHT = 0.18f
     }
 }

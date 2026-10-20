@@ -92,12 +92,12 @@ fun CompassScreen(
                 Tab(
                     selected = selectedTab == TAB_SUN,
                     onClick = { selectedTab = TAB_SUN },
-                    text = { Text(stringResource(R.string.compass_tab_sun)) },
+                    text = { Text(stringResource(R.string.compass_tab_celestial)) },
                 )
             }
             when (selectedTab) {
                 TAB_MAGNETIC -> MagneticTab(state, viewModel, requestLocation)
-                TAB_SUN -> SunTab(state, viewModel, requestLocation)
+                TAB_SUN -> CelestialTab(state, viewModel, requestLocation)
             }
         }
     }
@@ -177,15 +177,15 @@ private fun MagneticTab(
 }
 
 @Composable
-private fun SunTab(
+private fun CelestialTab(
     state: CompassUiState,
     viewModel: CompassViewModel,
     requestLocation: () -> Unit,
 ) {
-    // Collect gyro + compute sun position only while this tab is on screen.
+    // Collect gyro + compute body positions only while this tab is on screen.
     DisposableEffect(Unit) {
-        viewModel.setSunMode(true)
-        onDispose { viewModel.setSunMode(false) }
+        viewModel.setCelestialMode(true)
+        onDispose { viewModel.setCelestialMode(false) }
     }
 
     Column(
@@ -209,8 +209,8 @@ private fun SunTab(
             return@Column
         }
         val sunAz = state.sunAzimuthDeg
-        val sunAlt = state.sunAltitudeDeg
-        if (sunAz == null || sunAlt == null) {
+        val moonAz = state.moonAzimuthDeg
+        if (sunAz == null || moonAz == null) {
             Text(
                 text = stringResource(R.string.gps_waiting),
                 style = MaterialTheme.typography.bodyLarge,
@@ -219,7 +219,7 @@ private fun SunTab(
             return@Column
         }
 
-        val heading = state.sunHeadingDeg
+        val heading = state.celestialHeadingDeg
         if (heading != null) {
             CompassDial(
                 azimuth = heading,
@@ -229,7 +229,7 @@ private fun SunTab(
                     stringResource(R.string.compass_south),
                     stringResource(R.string.compass_west),
                 ),
-                modifier = Modifier.size(240.dp).padding(12.dp),
+                modifier = Modifier.size(220.dp).padding(10.dp),
             )
             Text(
                 text = "%3d°".format(heading.toInt()),
@@ -243,49 +243,55 @@ private fun SunTab(
             )
             Spacer(Modifier.height(8.dp))
         } else {
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(20.dp))
         }
 
+        val usingMoon = state.referenceBody == CompassViewModel.BODY_MOON
+        val referenceVisible = state.referenceBody != null
+        val bodyName = stringResource(
+            if (usingMoon) R.string.compass_body_moon else R.string.compass_body_sun,
+        )
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SunRow(
+                BodyRow(
                     label = stringResource(R.string.compass_sun_azimuth),
-                    value = "%.1f°".format(sunAz),
+                    value = "%.1f° / %.1f°".format(sunAz, state.sunAltitudeDeg ?: 0.0),
+                    active = state.referenceBody == CompassViewModel.BODY_SUN,
                 )
-                SunRow(
-                    label = stringResource(R.string.compass_sun_altitude),
-                    value = "%.1f°".format(sunAlt),
+                BodyRow(
+                    label = stringResource(R.string.compass_moon_azimuth),
+                    value = "%.1f° / %.1f°".format(moonAz, state.moonAltitudeDeg ?: 0.0),
+                    active = usingMoon,
                 )
             }
         }
 
         Spacer(Modifier.height(12.dp))
-        val sunVisible = sunAlt > 0.0
         Button(
-            onClick = { viewModel.calibrateSunHeading() },
-            enabled = sunVisible,
+            onClick = { viewModel.calibrateCelestialHeading() },
+            enabled = referenceVisible,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(stringResource(R.string.compass_sun_calibrate))
+            Text(stringResource(R.string.compass_celestial_calibrate, bodyName))
         }
-        if (state.sunCalibrated) {
+        if (state.celestialCalibrated) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = stringResource(R.string.compass_sun_calibrated),
+                    text = stringResource(R.string.compass_celestial_calibrated),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                TextButton(onClick = { viewModel.clearSunCalibration() }) {
+                TextButton(onClick = { viewModel.clearCelestialCalibration() }) {
                     Text(stringResource(R.string.compass_sun_recalibrate))
                 }
             }
         }
-        if (!sunVisible) {
+        if (!referenceVisible) {
             Text(
-                text = stringResource(R.string.compass_sun_below),
+                text = stringResource(R.string.compass_both_below),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
@@ -300,10 +306,25 @@ private fun SunTab(
 }
 
 @Composable
-private fun SunRow(label: String, value: String) {
+private fun BodyRow(label: String, value: String, active: Boolean) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, fontWeight = FontWeight.SemiBold)
+        Text(
+            text = label + if (active) "  ●" else "",
+            color = if (active) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+        )
+        Text(
+            value,
+            fontWeight = FontWeight.SemiBold,
+            color = if (active) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+        )
     }
 }
 

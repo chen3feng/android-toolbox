@@ -16,7 +16,7 @@ A fully on-device, ad-free Android utility app with **no network permission**, b
 
 | Tool | Description | Hardware / permission |
 | --- | --- | --- |
-| Compass | Magnetic/true north with rotation-vector + magnetometer fusion; **Sun orientation tab**: when the magnetic field is disturbed, derive direction from the Sun's azimuth (time + GPS) held by the magnetometer-free gyroscope | Magnetometer/gyroscope, location |
+| Compass | Magnetic/true north with rotation-vector + magnetometer fusion; **Sun/Moon orientation tab**: when the magnetic field is disturbed, derive direction from the Sun by day or the Moon at night (azimuth from time + GPS), held by the magnetometer-free gyroscope | Magnetometer/gyroscope, location |
 | Light meter | Ambient illuminance (lux) live readout, min/avg/max, chart | Light sensor |
 | Altimeter | GPS elevation (bundled EGM96 geoid converts WGS84 ellipsoidal height to orthometric height offline); barometric with QNH/known-altitude calibration when a pressure sensor exists | Location |
 | Flashlight | Rear/front torch always-on | Camera flash, CAMERA |

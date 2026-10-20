@@ -259,13 +259,16 @@
     </string-array>
     <!-- Sun orientation tab -->
     <string name="compass_tab_magnetic">Compass</string>
-    <string name="compass_tab_sun">Sun orientation</string>
-    <string name="compass_sun_azimuth">Sun azimuth</string>
+    <string name="compass_tab_celestial">Sun/Moon</string>
+    <string name="compass_sun_azimuth">Sun  az / alt</string>
     <string name="compass_sun_altitude">Sun altitude</string>
-    <string name="compass_sun_calibrate">Level the phone, point it at the Sun, then calibrate</string>
-    <string name="compass_sun_calibrated">Calibrated from the Sun</string>
+    <string name="compass_celestial_calibrate">Level the phone, point it at %1$s, then calibrate</string>
+    <string name="compass_celestial_calibrated">Calibrated from the sky</string>
     <string name="compass_sun_recalibrate">Recalibrate</string>
-    <string name="compass_sun_below">The Sun is below the horizon; use this in daytime.</string>
-    <string name="compass_sun_hint">For use when the magnetic field is disturbed (in a vehicle, indoors or near metal): point the top of the level phone at the Sun and calibrate. Heading is then held by the gyroscope; it slowly drifts, so re-align to the Sun after a while.</string>
+    <string name="compass_both_below">Both the Sun and Moon are below the horizon; calibration is unavailable.</string>
+    <string name="compass_sun_hint">For use when the magnetic field is disturbed (in a vehicle, indoors or near metal): point the top of the level phone at the Sun by day or the Moon at night and calibrate. Heading is then held by the magnetometer-free gyroscope; it slowly drifts, so re-align to the body after a while.</string>
     <string name="compass_sun_no_gyro">This device has no gyroscope; sun orientation is unavailable.</string>
+    <string name="compass_body_sun">the Sun</string>
+    <string name="compass_body_moon">the Moon</string>
+    <string name="compass_moon_azimuth">Moon  az / alt</string>
 </resources>

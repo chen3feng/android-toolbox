@@ -12,6 +12,7 @@ import kotlin.math.roundToLong
 import kotlin.math.sin
 import kotlin.math.tan
 
+
 /**
  * Pure-JVM astronomy math for the Sun & Moon tool: solar time, equation of time,
  * sunrise/sunset and lunar phase.
@@ -243,39 +244,132 @@ object AstroEngine {
     fun sunPosition(epochMillis: Long, latitudeDeg: Double, longitudeDeg: Double): SunPosition {
         val jd = julianDay(epochMillis)
         val t = julianCentury(jd)
-
         val apparentLong = sunApparentLong(t)
-        val epsilon = obliquityCorrection(t)
-        val decl = Math.toDegrees(
-            asin(
-                sin(Math.toRadians(epsilon)) * sin(Math.toRadians(apparentLong)),
-            ),
+        val h = eclipticToHorizontal(
+            jd, t, apparentLong, 0.0, latitudeDeg, longitudeDeg,
         )
+        val decl = solarDeclinationDeg(jd)
+        return SunPosition(h.azimuthDeg, h.altitudeDeg, decl)
+    }
+
+    data class CelestialPosition(
+        val azimuthDeg: Double,
+        val altitudeDeg: Double,
+    )
+
+    /**
+     * Horizontal coordinates of the Moon. Longitude uses the abridged Meeus ch.47
+     * principal terms; latitude is the dominant 5.128° sin(F) term — residual terms
+     * stay below about 0.6°, fine for phone-scale orientation (typically ~1° bearing).
+     */
+    fun moonPosition(epochMillis: Long, latitudeDeg: Double, longitudeDeg: Double): CelestialPosition {
+        val jd = julianDay(epochMillis)
+        val t = julianCentury(jd)
+        val ecliptic = moonEclipticLongitudeLat(t)
+        val pos = eclipticToHorizontal(
+            jd, t, ecliptic.first, ecliptic.second, latitudeDeg, longitudeDeg,
+        )
+        return CelestialPosition(pos.azimuthDeg, pos.altitudeDeg)
+    }
+
+    private data class Horizontal(val azimuthDeg: Double, val altitudeDeg: Double)
+
+    /** Rotates ecliptic (longitude, latitude) through equatorial to horizontal coords. */
+    private fun eclipticToHorizontal(
+        jd: Double,
+        t: Double,
+        eclipticLonDeg: Double,
+        eclipticLatDeg: Double,
+        latitudeDeg: Double,
+        longitudeDeg: Double,
+    ): Horizontal {
+        val epsilon = Math.toRadians(obliquityCorrection(t))
+        val lam = Math.toRadians(eclipticLonDeg)
+        val beta = Math.toRadians(eclipticLatDeg)
+
         val ra = norm360(
             Math.toDegrees(
                 atan2(
-                    cos(Math.toRadians(epsilon)) * sin(Math.toRadians(apparentLong)),
-                    cos(Math.toRadians(apparentLong)),
+                    sin(lam) * cos(epsilon) - tan(beta) * sin(epsilon),
+                    cos(lam),
                 ),
             ),
         )
+        val decl = Math.toDegrees(
+            asin(
+                (sin(beta) * cos(epsilon) + cos(beta) * sin(epsilon) * sin(lam))
+                    .coerceIn(-1.0, 1.0),
+            ),
+        )
 
-        // GMST in degrees (IAU 1982, consistent with J2000 JD convention used here).
+        // GMST in degrees (IAU 1982, consistent with the J2000 JD convention used here).
         val d = jd - J2000_JD
-        val gmst = norm360(280.46061837 + 360.98564736629 * d + 0.000387933 * t * t - t * t * t / 38_710_000.0)
+        val gmst = norm360(
+            280.46061837 + 360.98564736629 * d + 0.000387933 * t * t -
+                t * t * t / 38_710_000.0,
+        )
         val hourAngle = ((gmst + longitudeDeg - ra + 180.0) % 360.0 + 360.0) % 360.0 - 180.0
 
         val phi = Math.toRadians(latitudeDeg)
-        val dec = Math.toRadians(decl)
+        val decRad = Math.toRadians(decl)
         val h = Math.toRadians(hourAngle)
-        val sinAlt = sin(phi) * sin(dec) + cos(phi) * cos(dec) * cos(h)
+        val sinAlt = sin(phi) * sin(decRad) + cos(phi) * cos(decRad) * cos(h)
         val altitude = Math.toDegrees(asin(sinAlt.coerceIn(-1.0, 1.0)))
 
         // atan2(sin A, cos A) with A measured from north through east.
-        val sinAz = -cos(dec) * sin(h)
-        val cosAz = sin(dec) * cos(phi) - cos(dec) * sin(phi) * cos(h)
+        val sinAz = -cos(decRad) * sin(h)
+        val cosAz = sin(decRad) * cos(phi) - cos(decRad) * sin(phi) * cos(h)
         val azimuth = norm360(Math.toDegrees(atan2(sinAz, cosAz)))
-        return SunPosition(azimuth, altitude, decl)
+        return Horizontal(azimuth, altitude)
+    }
+
+    /** Moon ecliptic longitude/latitude in degrees (abridged Meeus ch.47 terms). */
+    private fun moonEclipticLongitudeLat(t: Double): Pair<Double, Double> {
+        val lPrime = norm360(
+            218.3164477 + 481267.88123421 * t - 0.0015924 * t * t +
+                t * t * t / 538841.0 - t * t * t * t / 65194000.0,
+        )
+        val d = Math.toRadians(
+            norm360(
+                297.8501921 + 445267.1114034 * t - 0.0018819 * t * t +
+                    t * t * t / 545868.0 - t * t * t * t / 113065000.0,
+            ),
+        )
+        val mSun = Math.toRadians(
+            357.5291092 + 35999.0502909 * t - 0.0001536 * t * t -
+                t * t * t / 24490000.0,
+        )
+        val mMoon = Math.toRadians(
+            norm360(
+                134.9633964 + 477198.8675055 * t + 0.0087414 * t * t +
+                    t * t * t / 69699.0 - t * t * t * t / 14712000.0,
+            ),
+        )
+        // Argument of latitude (mean distance node argument).
+        val f = Math.toRadians(
+            norm360(
+                93.2720950 + 483202.0175233 * t - 0.0036539 * t * t -
+                    t * t * t / 3_526_000.0 + t * t * t * t / 863_310_000.0,
+            ),
+        )
+
+        // Evection, variation, annual equation and the next-largest longitude terms.
+        val longitude = norm360(
+            lPrime +
+                6.289 * sin(mMoon) -
+                1.274 * sin(d - mMoon) +
+                0.658 * sin(d) -
+                0.186 * sin(mSun) -
+                0.059 * sin(2.0 * d - mMoon) -
+                0.057 * sin(d - mMoon - mSun) +
+                0.053 * sin(d + mMoon) +
+                0.046 * sin(d - mSun) +
+                0.041 * sin(mMoon - mSun) -
+                0.035 * sin(d + mMoon - mSun),
+        )
+        // Dominant latitude term only (amplitude 5.128°).
+        val latitude = 5.128 * sin(f)
+        return longitude to latitude
     }
 
     // ---------------------------------------------------------------------
@@ -298,45 +392,10 @@ object AstroEngine {
         val jd = julianDay(epochMillis)
         val t = julianCentury(jd)
 
-        // Sun apparent ecliptic longitude.
         val sunLon = sunApparentLong(t)
+        val lon = moonEclipticLongitudeLat(t).first
 
-        // Moon mean elements (degrees).
-        val lPrime = norm360(
-            218.3164477 + 481267.88123421 * t - 0.0015924 * t * t +
-                t * t * t / 538841.0 - t * t * t * t / 65194000.0,
-        )
-        val d = Math.toRadians(
-            norm360(
-                297.8501921 + 445267.1114034 * t - 0.0018819 * t * t +
-                    t * t * t / 545868.0 - t * t * t * t / 113065000.0,
-            ),
-        )
-        val mSun = Math.toRadians(
-            357.5291092 + 35999.0502909 * t - 0.0001536 * t * t -
-                t * t * t / 24490000.0,
-        )
-        val mMoon = Math.toRadians(
-            134.9633964 + 477198.8675055 * t + 0.0087414 * t * t +
-                t * t * t / 69699.0 - t * t * t * t / 14712000.0,
-        )
-
-        // Principal longitude perturbations (arguments in radians, terms degrees):
-        // evection, variation, annual equation and the next-largest terms.
-        var lon = lPrime +
-            6.289 * sin(mMoon) -
-            1.274 * sin(d - mMoon) +
-            0.658 * sin(d) -
-            0.186 * sin(mSun) -
-            0.059 * sin(2.0 * d - mMoon) -
-            0.057 * sin(d - mMoon - mSun) +
-            0.053 * sin(d + mMoon) +
-            0.046 * sin(d - mSun) +
-            0.041 * sin(mMoon - mSun) -
-            0.035 * sin(d + mMoon - mSun)
-        lon = norm360(lon)
-
-        // Elongation of the moon from the sun; the latitude term is <= 5°, ignored.
+        // Illumination uses the ecliptic elongation; the latitude term is <= 5°.
         val elongation = Math.toRadians(norm360(lon - sunLon))
         val illumination = (1.0 - cos(elongation)) / 2.0
         val elongationDeg = Math.toDegrees(elongation)

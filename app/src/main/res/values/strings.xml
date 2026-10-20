@@ -256,14 +256,14 @@
 
     <!-- Sun orientation tab -->
     <string name="compass_tab_magnetic">罗盘</string>
-    <string name="compass_tab_sun">太阳定向</string>
-    <string name="compass_sun_azimuth">太阳方位</string>
+    <string name="compass_tab_celestial">日月定向</string>
+    <string name="compass_sun_azimuth">太阳  方位/高度</string>
     <string name="compass_sun_altitude">太阳高度</string>
-    <string name="compass_sun_calibrate">水平举起手机、指向太阳后校准</string>
-    <string name="compass_sun_calibrated">已按太阳校准</string>
+    <string name="compass_celestial_calibrate">水平举起手机、指向%1$s后校准</string>
+    <string name="compass_celestial_calibrated">已按天体方位校准</string>
     <string name="compass_sun_recalibrate">重新校准</string>
-    <string name="compass_sun_below">太阳位于地平线下，请在白天使用</string>
-    <string name="compass_sun_hint">磁场受干扰（车内、楼内、靠近金属）时可用此方式：将手机顶部水平指向太阳并校准，朝向由陀螺仪保持；陀螺仪会缓慢漂移，行走一段时间后请重新对准太阳校准。</string>
+    <string name="compass_both_below">太阳和月亮都位于地平线下，暂时无法校准</string>
+    <string name="compass_sun_hint">磁场受干扰（车内、楼内、靠近金属）时可用此方式：白天对准太阳、夜间对准月亮，水平举起手机校准，朝向由陀螺仪（不依赖磁力计）保持；陀螺仪会缓慢漂移，行走一段时间后请重新对准天体校准。</string>
     <string name="compass_sun_no_gyro">本设备没有陀螺仪，无法使用太阳定向。</string>
 
     <!-- Widget labels (defaults reuse tool names) -->
@@ -282,4 +282,7 @@
     <string name="widget_description_timer">秒表快捷入口</string>
     <string name="widget_description_measure">测量工具快捷入口</string>
     <string name="widget_description_magnifier">放大镜快捷入口</string>
+    <string name="compass_body_sun">太阳</string>
+    <string name="compass_body_moon">月亮</string>
+    <string name="compass_moon_azimuth">月亮  方位/高度</string>
 </resources>

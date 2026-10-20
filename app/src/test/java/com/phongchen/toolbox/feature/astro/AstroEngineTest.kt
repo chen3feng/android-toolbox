@@ -148,6 +148,34 @@ class AstroEngineTest {
     }
 
     @Test
+    fun moonPosition_shenzhenNight() {
+        // 2026-10-20 21:40 CST (13:40 UT): waxing gibbous high in the SSW sky.
+        val m = AstroEngine.moonPosition(utc(2026, 10, 20, 13, 40), 22.54, 114.06)
+        assertTrue("az=${m.azimuthDeg}", m.azimuthDeg in 208.0..224.0)
+        assertTrue("alt=${m.altitudeDeg}", m.altitudeDeg in 38.0..52.0)
+    }
+
+    @Test
+    fun moonPosition_fullMoonOpposesSun() {
+        // At the 2024-09-18 full moon, somewhere on Earth the Moon is overhead and the
+        // Sun is near the nadir: scan the globe for the sub-lunar point via altitudes.
+        val ms = utc(2024, 9, 18, 2, 44)
+        var maxMoonAlt = -99.0
+        var sunAtSubMoon = 0.0
+        for (lat in -80..80 step 10) {
+            for (lon in 0..350 step 10) {
+                val moon = AstroEngine.moonPosition(ms, lat.toDouble(), lon.toDouble())
+                if (moon.altitudeDeg > maxMoonAlt) {
+                    maxMoonAlt = moon.altitudeDeg
+                    sunAtSubMoon = AstroEngine.sunPosition(ms, lat.toDouble(), lon.toDouble()).altitudeDeg
+                }
+            }
+        }
+        assertTrue("maxMoonAlt=$maxMoonAlt", maxMoonAlt > 80.0)
+        assertTrue("sunAltAtSubMoon=$sunAtSubMoon", sunAtSubMoon < -70.0)
+    }
+
+    @Test
     fun solarNoonAltitude() {
         // Beijing: summer solstice noon ~73.6°, winter solstice ~26.7°.
         val summer = AstroEngine.sunTimes(LocalDate.of(2026, 6, 21), 39.9, 116.4)
