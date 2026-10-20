@@ -6,17 +6,29 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -36,17 +48,29 @@ import com.phongchen.toolbox.core.ui.ToolScaffold
 import kotlin.math.cos
 import kotlin.math.sin
 
+private const val TAB_MAGNETIC = 0
+private const val TAB_SUN = 1
+
 @Composable
 fun CompassScreen(
     onBack: () -> Unit,
     viewModel: CompassViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    var selectedTab by remember { mutableIntStateOf(TAB_MAGNETIC) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { result ->
         viewModel.onLocationPermissionChanged(
             result[android.Manifest.permission.ACCESS_FINE_LOCATION] == true,
+        )
+    }
+    val requestLocation = {
+        permissionLauncher.launch(
+            arrayOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            ),
         )
     }
 
@@ -58,78 +82,228 @@ fun CompassScreen(
             )
             return@ToolScaffold
         }
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
-        ) {
-            if (state.accuracy in 0..SensorManager.SENSOR_STATUS_ACCURACY_LOW) {
-                ActionBanner(
-                    message = stringResource(R.string.compass_low_accuracy),
-                    actionLabel = stringResource(R.string.common_ok),
-                    onAction = { },
-                    modifier = Modifier.padding(top = 8.dp),
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            TabRow(selectedTabIndex = selectedTab) {
+                Tab(
+                    selected = selectedTab == TAB_MAGNETIC,
+                    onClick = { selectedTab = TAB_MAGNETIC },
+                    text = { Text(stringResource(R.string.compass_tab_magnetic)) },
+                )
+                Tab(
+                    selected = selectedTab == TAB_SUN,
+                    onClick = { selectedTab = TAB_SUN },
+                    text = { Text(stringResource(R.string.compass_tab_sun)) },
                 )
             }
-            Spacer(Modifier.height(8.dp))
+            when (selectedTab) {
+                TAB_MAGNETIC -> MagneticTab(state, viewModel, requestLocation)
+                TAB_SUN -> SunTab(state, viewModel, requestLocation)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MagneticTab(
+    state: CompassUiState,
+    viewModel: CompassViewModel,
+    requestLocation: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+    ) {
+        if (state.accuracy in 0..SensorManager.SENSOR_STATUS_ACCURACY_LOW) {
+            ActionBanner(
+                message = stringResource(R.string.compass_low_accuracy),
+                actionLabel = stringResource(R.string.common_ok),
+                onAction = { },
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        CompassDial(
+            azimuth = state.azimuthDeg,
+            labels = listOf(
+                stringResource(R.string.compass_north),
+                stringResource(R.string.compass_east),
+                stringResource(R.string.compass_south),
+                stringResource(R.string.compass_west),
+            ),
+            modifier = Modifier.size(300.dp).padding(16.dp),
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = "%3d°".format(state.azimuthDeg.toInt()),
+            style = MaterialTheme.typography.displayMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = CompassEngine.directionLabel(state.azimuthDeg),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Spacer(Modifier.height(16.dp))
+        FilterChip(
+            selected = state.trueNorthEnabled,
+            onClick = { viewModel.setTrueNorth(!state.trueNorthEnabled) },
+            label = {
+                Text(
+                    if (state.trueNorthEnabled) {
+                        stringResource(R.string.compass_true)
+                    } else {
+                        stringResource(R.string.compass_magnetic)
+                    },
+                )
+            },
+        )
+        state.declinationDeg?.let { decl ->
+            Text(
+                text = stringResource(R.string.compass_declination, decl),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        if (state.trueNorthEnabled && !state.hasLocationPermission) {
+            ActionBanner(
+                message = stringResource(R.string.compass_location_rationale),
+                actionLabel = stringResource(R.string.common_grant),
+                onAction = requestLocation,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SunTab(
+    state: CompassUiState,
+    viewModel: CompassViewModel,
+    requestLocation: () -> Unit,
+) {
+    // Collect gyro + compute sun position only while this tab is on screen.
+    DisposableEffect(Unit) {
+        viewModel.setSunMode(true)
+        onDispose { viewModel.setSunMode(false) }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+    ) {
+        Spacer(Modifier.height(12.dp))
+        if (!state.hasGameRotation) {
+            com.phongchen.toolbox.core.ui.UnsupportedPanel(
+                message = stringResource(R.string.compass_sun_no_gyro),
+            )
+            return@Column
+        }
+        if (!state.hasLocationPermission) {
+            ActionBanner(
+                message = stringResource(R.string.compass_location_rationale),
+                actionLabel = stringResource(R.string.common_grant),
+                onAction = requestLocation,
+            )
+            return@Column
+        }
+        val sunAz = state.sunAzimuthDeg
+        val sunAlt = state.sunAltitudeDeg
+        if (sunAz == null || sunAlt == null) {
+            Text(
+                text = stringResource(R.string.gps_waiting),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            return@Column
+        }
+
+        val heading = state.sunHeadingDeg
+        if (heading != null) {
             CompassDial(
-                azimuth = state.azimuthDeg,
+                azimuth = heading,
                 labels = listOf(
                     stringResource(R.string.compass_north),
                     stringResource(R.string.compass_east),
                     stringResource(R.string.compass_south),
                     stringResource(R.string.compass_west),
                 ),
-                modifier = Modifier.size(300.dp).padding(16.dp),
+                modifier = Modifier.size(240.dp).padding(12.dp),
             )
-            Spacer(Modifier.height(16.dp))
             Text(
-                text = "%3d°".format(state.azimuthDeg.toInt()),
-                style = MaterialTheme.typography.displayMedium,
+                text = "%3d°".format(heading.toInt()),
+                style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = CompassEngine.directionLabel(state.azimuthDeg),
-                style = MaterialTheme.typography.titleLarge,
+                text = CompassEngine.directionLabel(heading),
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
-            Spacer(Modifier.height(16.dp))
-            FilterChip(
-                selected = state.trueNorthEnabled,
-                onClick = { viewModel.setTrueNorth(!state.trueNorthEnabled) },
-                label = {
-                    Text(
-                        if (state.trueNorthEnabled) {
-                            stringResource(R.string.compass_true)
-                        } else {
-                            stringResource(R.string.compass_magnetic)
-                        },
-                    )
-                },
-            )
-            state.declinationDeg?.let { decl ->
-                Text(
-                    text = stringResource(R.string.compass_declination, decl),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
             Spacer(Modifier.height(8.dp))
-            if (state.trueNorthEnabled && !state.hasLocationPermission) {
-                ActionBanner(
-                    message = stringResource(R.string.compass_location_rationale),
-                    actionLabel = stringResource(R.string.common_grant),
-                    onAction = {
-                        permissionLauncher.launch(
-                            arrayOf(
-                                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                            ),
-                        )
-                    },
+        } else {
+            Spacer(Modifier.height(24.dp))
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SunRow(
+                    label = stringResource(R.string.compass_sun_azimuth),
+                    value = "%.1f°".format(sunAz),
+                )
+                SunRow(
+                    label = stringResource(R.string.compass_sun_altitude),
+                    value = "%.1f°".format(sunAlt),
                 )
             }
         }
+
+        Spacer(Modifier.height(12.dp))
+        val sunVisible = sunAlt > 0.0
+        Button(
+            onClick = { viewModel.calibrateSunHeading() },
+            enabled = sunVisible,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.compass_sun_calibrate))
+        }
+        if (state.sunCalibrated) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.compass_sun_calibrated),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(onClick = { viewModel.clearSunCalibration() }) {
+                    Text(stringResource(R.string.compass_sun_recalibrate))
+                }
+            }
+        }
+        if (!sunVisible) {
+            Text(
+                text = stringResource(R.string.compass_sun_below),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.compass_sun_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun SunRow(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, fontWeight = FontWeight.SemiBold)
     }
 }
 

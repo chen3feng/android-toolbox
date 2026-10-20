@@ -104,6 +104,50 @@ class AstroEngineTest {
     }
 
     @Test
+    fun sunPosition_noonAndRiseSet() {
+        // Beijing near summer-solstice transit (12:15 CST = 04:15 UT): due south, 73.5 deg.
+        val noon = AstroEngine.sunPosition(utc(2026, 6, 21, 4, 15), 39.9, 116.4)
+        assertTrue("az=${noon.azimuthDeg}", noon.azimuthDeg in 175.0..185.0)
+        assertTrue("alt=${noon.altitudeDeg}", noon.altitudeDeg in 72.5..74.5)
+        assertEquals(23.44, noon.declinationDeg, 0.1)
+
+        // Shenzhen, mid-October, a few minutes after transit: sun past south.
+        val sz = AstroEngine.sunPosition(utc(2026, 10, 20, 4, 24), 22.5431, 114.0579)
+        assertTrue("az=${sz.azimuthDeg}", sz.azimuthDeg in 183.0..191.0)
+        assertTrue("alt=${sz.altitudeDeg}", sz.altitudeDeg in 56.0..58.0)
+
+        // At the computed sunrise instant, geometric altitude sits just under zero
+        // (the -0.833 deg sunrise zenith includes refraction + radius), az ~ ESE.
+        val times = AstroEngine.sunTimes(LocalDate.of(2026, 10, 20), 22.5431, 114.0579)
+        val rise = AstroEngine.sunPosition(
+            AstroEngine.epochMillisFromJulianDay(times.sunriseJd!!), 22.5431, 114.0579,
+        )
+        assertTrue("rise alt=${rise.altitudeDeg}", rise.altitudeDeg in -1.6..0.2)
+        assertTrue("rise az=${rise.azimuthDeg}", rise.azimuthDeg in 95.0..106.0)
+        val set = AstroEngine.sunPosition(
+            AstroEngine.epochMillisFromJulianDay(times.sunsetJd!!), 22.5431, 114.0579,
+        )
+        // Rise/set come from the abridged sunrise equation (-0.833 deg zenith); tolerance
+        // covers its ~0.4 deg cross-model offset against the full NOAA sun position.
+        assertTrue("set alt=${set.altitudeDeg}", set.altitudeDeg in -1.6..0.2)
+        assertTrue("set az=${set.azimuthDeg}", set.azimuthDeg in 254.0..265.0)
+
+        // Deep night: sun well below the horizon.
+        val night = AstroEngine.sunPosition(utc(2026, 10, 20, 13, 30), 22.5431, 114.0579)
+        assertTrue("night alt=${night.altitudeDeg}", night.altitudeDeg < -40.0)
+    }
+
+    @Test
+    fun sunPosition_longitudeMovesNoonByFourMinutesPerDegree() {
+        // 15 degrees farther east transits the meridian one UT hour earlier.
+        val a = AstroEngine.sunPosition(utc(2026, 6, 21, 4, 15), 39.9, 116.4)
+        val b = AstroEngine.sunPosition(utc(2026, 6, 21, 3, 15), 39.9, 131.4)
+        // Same sky configuration (azimuth within ~1 deg, altitude within ~0.3 deg).
+        assertEquals(a.azimuthDeg, b.azimuthDeg, 1.0)
+        assertEquals(a.altitudeDeg, b.altitudeDeg, 0.3)
+    }
+
+    @Test
     fun solarNoonAltitude() {
         // Beijing: summer solstice noon ~73.6°, winter solstice ~26.7°.
         val summer = AstroEngine.sunTimes(LocalDate.of(2026, 6, 21), 39.9, 116.4)

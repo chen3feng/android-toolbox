@@ -254,6 +254,18 @@
         <item>残月</item>
     </string-array>
 
+    <!-- Sun orientation tab -->
+    <string name="compass_tab_magnetic">罗盘</string>
+    <string name="compass_tab_sun">太阳定向</string>
+    <string name="compass_sun_azimuth">太阳方位</string>
+    <string name="compass_sun_altitude">太阳高度</string>
+    <string name="compass_sun_calibrate">水平举起手机、指向太阳后校准</string>
+    <string name="compass_sun_calibrated">已按太阳校准</string>
+    <string name="compass_sun_recalibrate">重新校准</string>
+    <string name="compass_sun_below">太阳位于地平线下，请在白天使用</string>
+    <string name="compass_sun_hint">磁场受干扰（车内、楼内、靠近金属）时可用此方式：将手机顶部水平指向太阳并校准，朝向由陀螺仪保持；陀螺仪会缓慢漂移，行走一段时间后请重新对准太阳校准。</string>
+    <string name="compass_sun_no_gyro">本设备没有陀螺仪，无法使用太阳定向。</string>
+
     <!-- Widget labels (defaults reuse tool names) -->
     <string name="widget_description_compass">指南针快捷入口</string>
     <string name="widget_description_light">亮度计快捷入口</string>

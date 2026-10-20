@@ -4,6 +4,7 @@ import java.time.LocalDate
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.asin
+import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor
@@ -223,6 +224,58 @@ object AstroEngine {
     fun solarNoonAltitudeDeg(latitudeDeg: Double, transitJd: Double): Double {
         val decl = solarDeclinationDeg(transitJd)
         return (90.0 - abs(latitudeDeg - decl)).coerceIn(0.0, 90.0)
+    }
+
+    data class SunPosition(
+        /** Compass bearing of the Sun from true north, clockwise, 0..360. */
+        val azimuthDeg: Double,
+        /** Altitude above the horizon in degrees (geometric, no refraction). */
+        val altitudeDeg: Double,
+        val declinationDeg: Double,
+    )
+
+    /**
+     * Horizontal coordinates of the Sun for an instant and observer position.
+     * Equatorial quantities come from the NOAA low-precision sun; the hour angle is
+     * derived from Greenwich Mean Sidereal Time (IAU 1982 formula). No time-zone input
+     * needed — only the UT instant and east-positive longitude.
+     */
+    fun sunPosition(epochMillis: Long, latitudeDeg: Double, longitudeDeg: Double): SunPosition {
+        val jd = julianDay(epochMillis)
+        val t = julianCentury(jd)
+
+        val apparentLong = sunApparentLong(t)
+        val epsilon = obliquityCorrection(t)
+        val decl = Math.toDegrees(
+            asin(
+                sin(Math.toRadians(epsilon)) * sin(Math.toRadians(apparentLong)),
+            ),
+        )
+        val ra = norm360(
+            Math.toDegrees(
+                atan2(
+                    cos(Math.toRadians(epsilon)) * sin(Math.toRadians(apparentLong)),
+                    cos(Math.toRadians(apparentLong)),
+                ),
+            ),
+        )
+
+        // GMST in degrees (IAU 1982, consistent with J2000 JD convention used here).
+        val d = jd - J2000_JD
+        val gmst = norm360(280.46061837 + 360.98564736629 * d + 0.000387933 * t * t - t * t * t / 38_710_000.0)
+        val hourAngle = ((gmst + longitudeDeg - ra + 180.0) % 360.0 + 360.0) % 360.0 - 180.0
+
+        val phi = Math.toRadians(latitudeDeg)
+        val dec = Math.toRadians(decl)
+        val h = Math.toRadians(hourAngle)
+        val sinAlt = sin(phi) * sin(dec) + cos(phi) * cos(dec) * cos(h)
+        val altitude = Math.toDegrees(asin(sinAlt.coerceIn(-1.0, 1.0)))
+
+        // atan2(sin A, cos A) with A measured from north through east.
+        val sinAz = -cos(dec) * sin(h)
+        val cosAz = sin(dec) * cos(phi) - cos(dec) * sin(phi) * cos(h)
+        val azimuth = norm360(Math.toDegrees(atan2(sinAz, cosAz)))
+        return SunPosition(azimuth, altitude, decl)
     }
 
     // ---------------------------------------------------------------------
