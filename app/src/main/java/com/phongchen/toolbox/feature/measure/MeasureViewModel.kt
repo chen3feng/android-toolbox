@@ -57,12 +57,15 @@ class MeasureViewModel(app: Application) : ContainerViewModel(app) {
     }
 
     /**
-     * Plumb deviation for a phone held UPRIGHT (screen vertical): the gravity vector
-     * projected onto the screen plane, angle = atan2(gx, -gy). Using the flat-device
-     * roll atan2(gx, gz) here is singular when upright — tiny tilts read as tens of
-     * degrees, and a face-down phone (gz < 0) still shows a vertical line.
+     * Plumb deviation for a phone held upright: the gravity vector projected onto the
+     * screen plane, angle = atan2(gx, gy). It reads 0 vertical, positive when the top
+     * tilts left. Sign-independent validity (|gy| large) accepts both normal and
+     * reverse-portrait grips.
      *
-     * @return (degrees, valid) where valid means the phone is roughly upright.
+     * The previous atan2(gx, gz) roll is singular when upright — tiny tilts read as
+     * tens of degrees — and a face-down phone (gz < 0) still drew a vertical line.
+     *
+     * @return (degrees, valid) where valid means the screen is roughly vertical.
      */
     private fun uprightPlumb(gravity: FloatArray): Pair<Float, Boolean> {
         val magnitude = kotlin.math.sqrt(
@@ -71,10 +74,14 @@ class MeasureViewModel(app: Application) : ContainerViewModel(app) {
         if (magnitude == 0f) return 0f to false
         val gx = gravity[0] / magnitude
         val gy = gravity[1] / magnitude
-        val uprightComponent = -gy // ≈ 1 when held upright with the top edge up
-        val angle = Math.toDegrees(kotlin.math.atan2(gx, uprightComponent).toDouble()).toFloat()
-        // Within ~66° of upright (upright component > 0.4) the plumb line is meaningful.
-        return angle to (uprightComponent > 0.4f)
+        // In normal portrait the screen-down vector is (gx, gy); when the phone is held
+        // upside down (gy < 0) the system rotates the UI 180°, so screen-down maps to
+        // (-gx, -gy) — flip both, which also reads 0 when the inverted phone is plumb.
+        val downX = if (gy < 0f) -gx else gx
+        val downY = kotlin.math.abs(gy)
+        val angle = Math.toDegrees(kotlin.math.atan2(downX, downY).toDouble()).toFloat()
+        // Meaningful whenever the screen is roughly vertical, either edge up.
+        return angle to (downY > 0.4f)
     }
 
     fun setProtractorZero() {
