@@ -20,14 +20,26 @@ data class AltimeterUiState(
     val hasPressureSensor: Boolean = false,
     val pressureHpa: Float? = null,
     val pressureAltitudeM: Float? = null,
-    val gpsAltitudeM: Double? = null,
+    /** GPS height above the WGS84 ellipsoid (HAE), not a sea-level elevation. */
+    val gpsEllipsoidalHeightM: Double? = null,
     val gpsVerticalAccuracyM: Float? = null,
+    /** EGM96 geoid undulation N at the fix location. */
+    val geoidUndulationM: Double? = null,
     val hasLocationPermission: Boolean = false,
     val metricUnits: Boolean = true,
     val qnhHpa: Double = ToolSettings.STANDARD_QNH_HPA,
 ) {
-    /** Pressure preferred, GPS fallback. */
-    val primaryAltitudeM: Float? get() = pressureAltitudeM ?: gpsAltitudeM?.toFloat()
+    /** Orthometric (MSL) elevation from GPS: h = H(ellipsoidal) − N. */
+    val gpsMslAltitudeM: Double?
+        get() = if (gpsEllipsoidalHeightM != null && geoidUndulationM != null) {
+            gpsEllipsoidalHeightM - geoidUndulationM
+        } else {
+            null
+        }
+
+    /** Sea-level elevation: barometric preferred, EGM96 GPS fallback. */
+    val primaryAltitudeM: Float?
+        get() = pressureAltitudeM ?: gpsMslAltitudeM?.toFloat()
     val usingPressure: Boolean get() = pressureAltitudeM != null
 }
 
@@ -41,6 +53,7 @@ class AltimeterViewModel(app: Application) : ContainerViewModel(app) {
     private var pressure: Float? = null
     private var location: Location? = null
     private var gpsJob: Job? = null
+    private val geoidModel: GeoidModel? = GeoidModel.load(getApplication())
 
     private val _uiState = MutableStateFlow(
         AltimeterUiState(
@@ -98,7 +111,13 @@ class AltimeterViewModel(app: Application) : ContainerViewModel(app) {
         gpsJob?.cancel()
         if (!granted) {
             location = null
-            _uiState.update { it.copy(hasLocationPermission = false, gpsAltitudeM = null) }
+            _uiState.update {
+                it.copy(
+                    hasLocationPermission = false,
+                    gpsEllipsoidalHeightM = null,
+                    geoidUndulationM = null,
+                )
+            }
             return
         }
         _uiState.update { it.copy(hasLocationPermission = true) }
@@ -120,14 +139,18 @@ class AltimeterViewModel(app: Application) : ContainerViewModel(app) {
         val pressureAlt = pressure?.let {
             AltimeterEngine.pressureAltitudeMeters(it, settings.qnhHpa)
         }
-        val gpsAlt = location?.takeIf { it.hasAltitude() }?.altitude
+        val hae = location?.takeIf { it.hasAltitude() }?.altitude
         val vAcc = location?.verticalAccuracyM()
+        val geoidN = location?.let { loc ->
+            geoidModel?.undulationM(loc.latitude, loc.longitude)
+        }
         _uiState.update {
             it.copy(
                 pressureHpa = pressure,
                 pressureAltitudeM = pressureAlt,
-                gpsAltitudeM = gpsAlt,
+                gpsEllipsoidalHeightM = hae,
                 gpsVerticalAccuracyM = vAcc,
+                geoidUndulationM = geoidN,
                 metricUnits = settings.metricUnits,
                 qnhHpa = settings.qnhHpa,
             )

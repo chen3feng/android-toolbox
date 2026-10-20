@@ -14,7 +14,7 @@ A fully on-device, ad-free Android utility app with **no network permission**, b
 | --- | --- | --- |
 | Compass | Magnetic/true north, rotation-vector + magnetometer fusion | Magnetometer, orientation |
 | Light meter | Ambient illuminance (lux) live readout, min/avg/max, chart | Light sensor |
-| Altimeter | GPS altitude; barometric when a pressure sensor exists | Location |
+| Altimeter | GPS elevation (bundled EGM96 geoid converts WGS84 ellipsoidal height to orthometric height offline); barometric with QNH/known-altitude calibration when a pressure sensor exists | Location |
 | Flashlight | Rear/front torch always-on | Camera flash, CAMERA |
 | Level | Bubble, pitch/roll, calibratable zero | Gravity/accelerometer |
 | Sound meter | Mic RMS → dB with a manual calibration offset for SPL estimation | Microphone, RECORD_AUDIO |
@@ -75,6 +75,10 @@ app/src/main/java/com/phongchen/toolbox/
 └── MainActivity.kt  # single Activity + NavHost + deep links
 app/src/test/        # JVM unit tests for the engines
 ```
+
+## Data sources
+
+- The EGM96 0.5° geoid grid (`app/src/main/assets/egm96_0_5.bin`) used for elevation conversion is an exact node subset of the official NGA 15′ grid `WW15MGH.DAC` (a U.S. Government work, public domain), with bicubic interpolation — typically within 0.3 m of the full-harmonic reference, worst case about 2 m. See the `GeoidModel.kt` header for the build/verification method.
 
 ## License
 

@@ -25,6 +25,10 @@
 - **时间驱动 + 硬件驱动双源**：ViewModel 同时收集 `LocationProvider.fixes()`（只存最新经纬度）和一个每秒发射的 `ticker()` Flow；每次 tick 用「当前时间 × 经纬度」重算 UI。日出日落只依赖日期与位置，用 `localDate + lat/lon` 做内存缓存避免每秒重算。
 - **Engine 只接收 epochMillis / 经纬度等纯参数**，不接触 `Calendar`、Android Framework 或设备时区之外的东西；时区/本地化的换算放在 ViewModel/Screen 层（`Instant.atZone(ZoneId.systemDefault())`），所以儒略日、均时差、日出日落、月相全部能直接 JVM 单测。月相的八相名称走 `res/values/strings.xml` 的 `<string-array>`（英文同步放 `values-en`），而不是硬编码。
 
+### 离线数据资产（assets/）
+
+需要查表的纯数据模型（目前是高度计的 EGM96 大地水准面网格）走同一套路：二进制放 `app/src/main/assets/`，加载器是普通 Android 类（`GeoidModel.load(context)`，读一次缓存到 ViewModel），**插值逻辑放在不依赖 Android 的 `GeoidInterp` object**，接收 ShortArray + 网格参数，因此 JVM 单测直接读 `src/main/assets/` 文件即可验证，还能对照独立第三方实现的锚点值。GPS 的 `Location.altitude` 是 WGS84 椭球大地高 H，海拔（正高）h = H − N，N 由该模型内插得到；界面必须同时展示两个高度与 N，避免把椭球高误当海拔。
+
 ## 3. 核心模块（core/）
 
 - `Tool.kt` —— **唯一注册表**。枚举条目不只是 route，还携带标题/副标题/图标字符串资源、图标 drawable、widget 描述与 widget Receiver 类。首页网格、导航、深链合法性（`Tool.fromRoute`）、首页排序（`Tool.orderedBy`，新版本新增工具自动追加到末尾）全部由它生成。

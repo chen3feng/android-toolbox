@@ -77,25 +77,51 @@ fun AltimeterScreen(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            primary?.let {
-                Text(
-                    text = stringResource(
-                        if (state.usingPressure) R.string.source_pressure else R.string.source_gps,
-                    ),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
+            // Explicit MSL label, tagged with the source actually driving the big number.
+            Text(
+                text = stringResource(R.string.altimeter_elevation) +
+                    primary?.let {
+                        "  ·  " + stringResource(
+                            if (state.usingPressure) {
+                                R.string.source_pressure
+                            } else {
+                                R.string.source_gps_egm
+                            },
+                        )
+                    }.orEmpty(),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
 
             Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     ReadingRow(
-                        label = stringResource(R.string.pressure_hpa),
-                        value = state.pressureHpa?.let { "%.1f hPa".format(it) } ?: "—",
+                        label = stringResource(R.string.altimeter_pressure_altitude),
+                        value = formatElevation(state.pressureAltitudeM?.toDouble(), state.metricUnits),
                     )
                     ReadingRow(
-                        label = stringResource(R.string.gps_altitude),
-                        value = formatGps(state),
+                        label = stringResource(R.string.gps_msl_altitude),
+                        value = formatElevation(state.gpsMslAltitudeM, state.metricUnits),
+                    )
+                    ReadingRow(
+                        label = stringResource(R.string.gps_hae_altitude),
+                        value = formatHae(state),
+                    )
+                    ReadingRow(
+                        label = stringResource(R.string.geoid_undulation),
+                        value = state.geoidUndulationM?.let {
+                            if (state.metricUnits) {
+                                "%+.1f m".format(it)
+                            } else {
+                                "%+.1f ft".format(
+                                    AltimeterEngine.metersToFeet(it.toFloat()).toDouble(),
+                                )
+                            }
+                        } ?: "—",
+                    )
+                    ReadingRow(
+                        label = stringResource(R.string.pressure_hpa),
+                        value = state.pressureHpa?.let { "%.1f hPa".format(it) } ?: "—",
                     )
                     ReadingRow(
                         label = "QNH",
@@ -108,6 +134,11 @@ fun AltimeterScreen(
                     )
                 }
             }
+            Text(
+                text = stringResource(R.string.altimeter_geoid_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             if (!state.hasLocationPermission && !state.hasPressureSensor) {
                 ActionBanner(
@@ -155,19 +186,41 @@ fun AltimeterScreen(
 }
 
 @Composable
-private fun formatGps(state: AltimeterUiState): String = when {
-    state.gpsAltitudeM != null && state.gpsVerticalAccuracyM != null ->
-        "%.1f m  (±%.1f m)".format(state.gpsAltitudeM, state.gpsVerticalAccuracyM)
+private fun formatElevation(meters: Double?, metric: Boolean): String = when {
+    meters == null -> "—"
+    metric -> "%.1f m".format(meters)
+    else -> "%.1f ft".format(AltimeterEngine.metersToFeet(meters.toFloat()))
+}
 
-    state.gpsAltitudeM != null -> "%.1f m".format(state.gpsAltitudeM)
-    state.hasLocationPermission -> stringResource(R.string.gps_waiting)
-    else -> "—"
+@Composable
+private fun formatHae(state: AltimeterUiState): String = when {
+    state.gpsEllipsoidalHeightM == null ->
+        if (state.hasLocationPermission) stringResource(R.string.gps_waiting) else "—"
+    state.metricUnits ->
+        "%.1f m%s".format(
+            state.gpsEllipsoidalHeightM,
+            state.gpsVerticalAccuracyM?.let { "  (±%.1f m)".format(it) }.orEmpty(),
+        )
+    else ->
+        "%.1f ft%s".format(
+            AltimeterEngine.metersToFeet(state.gpsEllipsoidalHeightM.toFloat()),
+            state.gpsVerticalAccuracyM?.let {
+                "  (±%.1f ft)".format(AltimeterEngine.metersToFeet(it))
+            }.orEmpty(),
+        )
 }
 
 @Composable
 private fun ReadingRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            label,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f).padding(end = 12.dp),
+        )
         Text(value, fontWeight = FontWeight.SemiBold)
     }
 }

@@ -14,7 +14,7 @@
 | --- | --- | --- |
 | 指南针 Compass | 磁北/真北切换，旋转矢量 + 磁力计融合 | 磁力计、方向传感器 |
 | 亮度计 Light | 环境照度（lux）实时读数、Min/Avg/Max、曲线 | 光线传感器 |
-| 高度计 Altimeter | GPS 海拔；有气压计时使用气压计 | 定位权限 |
+| 高度计 Altimeter | GPS 海拔（内置 EGM96 大地水准面模型，把 WGS84 椭球高离线换算为正高）；有气压计时使用气压计，支持 QNH/已知高度校准 | 定位权限 |
 | 手电筒 Flashlight | 前置/后置闪光灯常亮 | 相机闪光灯、CAMERA |
 | 水平仪 Level | 气泡、俯仰角/横滚角、可置零 | 重力/加速度传感器 |
 | 分贝计 Sound | 麦克风 RMS → dB，支持手动校准偏移估算 SPL | 麦克风、RECORD_AUDIO |
@@ -75,6 +75,10 @@ app/src/main/java/com/phongchen/toolbox/
 └── MainActivity.kt  # 单 Activity + NavHost + 深链
 app/src/test/        # 各 Engine 的 JVM 单元测试
 ```
+
+## 数据来源
+
+- 海拔换算使用的 EGM96 0.5° 大地水准面网格（`app/src/main/assets/egm96_0_5.bin`）由 NGA 官方 15′ 网格 `WW15MGH.DAC`（美国政府作品，公有领域）抽点生成，双三次插值，与全阶球谐参考值偏差一般 < 0.3 m、最坏约 2 m；生成与校验方法见 `GeoidModel.kt` 注释。
 
 ## 许可证
 

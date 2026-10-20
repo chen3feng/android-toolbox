@@ -84,6 +84,13 @@
     <string name="unit_feet">英尺</string>
     <string name="pressure_hpa">气压</string>
     <string name="gps_altitude">GPS 海拔</string>
+    <string name="altimeter_elevation">海拔高度</string>
+    <string name="gps_msl_altitude">GPS 海拔（EGM96）</string>
+    <string name="gps_hae_altitude">GPS 椭球高（WGS84）</string>
+    <string name="geoid_undulation">大地水准面差距 N</string>
+    <string name="source_gps_egm">GPS · EGM96</string>
+    <string name="altimeter_geoid_note">GPS 直接输出的是相对 WGS84 椭球面的大地高，不是海拔；GPS 海拔经内置 EGM96 大地水准面模型离线换算，与当地法定高程基准可能有数米差异。</string>
+    <string name="altimeter_pressure_altitude">气压海拔</string>
     <string name="gps_waiting">等待 GPS 定位…</string>
     <string name="source_pressure">气压</string>
     <string name="source_gps">GPS</string>

@@ -78,6 +78,13 @@
     <string name="unit_feet">ft</string>
     <string name="pressure_hpa">Pressure</string>
     <string name="gps_altitude">GPS altitude</string>
+    <string name="altimeter_elevation">Elevation (MSL)</string>
+    <string name="gps_msl_altitude">GPS elevation (EGM96)</string>
+    <string name="gps_hae_altitude">GPS height above WGS84 ellipsoid</string>
+    <string name="geoid_undulation">Geoid undulation N</string>
+    <string name="source_gps_egm">GPS · EGM96</string>
+    <string name="altimeter_geoid_note">GPS reports height above the WGS84 ellipsoid, not sea level. GPS elevation is derived offline via the bundled EGM96 geoid model and may differ a few metres from local vertical datums.</string>
+    <string name="altimeter_pressure_altitude">Barometric altitude</string>
     <string name="gps_waiting">Waiting for GPS fix…</string>
     <string name="source_pressure">Pressure</string>
     <string name="source_gps">GPS</string>
