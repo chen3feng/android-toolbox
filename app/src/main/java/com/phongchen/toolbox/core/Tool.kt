@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.phongchen.toolbox.R
 import com.phongchen.toolbox.widget.receiver.AltimeterWidgetReceiver
+import com.phongchen.toolbox.widget.receiver.AstroWidgetReceiver
 import com.phongchen.toolbox.widget.receiver.AudioWidgetReceiver
 import com.phongchen.toolbox.widget.receiver.CompassWidgetReceiver
 import com.phongchen.toolbox.widget.receiver.FlashlightWidgetReceiver
@@ -150,6 +151,14 @@ enum class Tool(
         iconRes = R.drawable.ic_tool_magnifier,
         widgetDescriptionRes = R.string.widget_description_magnifier,
         widgetReceiver = MagnifierWidgetReceiver::class.java,
+    ),
+    ASTRO(
+        route = "astro",
+        titleRes = R.string.tool_astro,
+        subtitleRes = R.string.subtitle_astro,
+        iconRes = R.drawable.ic_tool_astro,
+        widgetDescriptionRes = R.string.widget_description_astro,
+        widgetReceiver = AstroWidgetReceiver::class.java,
     ),
     ;
 

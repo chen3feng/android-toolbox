@@ -1,0 +1,174 @@
+package com.phongchen.toolbox.feature.astro
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import kotlin.math.abs
+
+class AstroEngineTest {
+
+    private fun utc(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long =
+        ZonedDateTime.of(year, month, day, hour, minute, 0, 0, ZoneOffset.UTC)
+            .toInstant().toEpochMilli()
+
+    @Test
+    fun julianDay_j2000Epoch() {
+        // 2000-01-01 12:00 UT is JD 2451545.0.
+        val jd = AstroEngine.julianDay(utc(2000, 1, 1, 12, 0))
+        assertEquals(2451545.0, jd, 1e-6)
+    }
+
+    @Test
+    fun julianDayAtMidnightUtc_isHalfIntegerBeforeNoonJd() {
+        val jd = AstroEngine.julianDayAtMidnightUtc(LocalDate.of(2000, 1, 1))
+        assertEquals(2451544.5, jd, 1e-6)
+    }
+
+    @Test
+    fun epochMillisRoundTrip() {
+        val ms = utc(2026, 10, 20, 4, 0)
+        assertEquals(
+            ms.toDouble(),
+            AstroEngine.epochMillisFromJulianDay(AstroEngine.julianDay(ms)).toDouble(),
+            1.0,
+        )
+    }
+
+    @Test
+    fun solarDeclination_solstices() {
+        val winter = AstroEngine.solarDeclinationDeg(AstroEngine.julianDay(utc(2000, 12, 21, 12, 0)))
+        val summer = AstroEngine.solarDeclinationDeg(AstroEngine.julianDay(utc(2000, 6, 21, 12, 0)))
+        assertEquals(-23.43, winter, 0.2)
+        assertEquals(23.44, summer, 0.2)
+    }
+
+    @Test
+    fun equationOfTime_yearlyRange() {
+        // EoT always stays within roughly +/-16 minutes.
+        var day = utc(2026, 1, 1, 12, 0)
+        val stepMs = 86_400_000L
+        var min = 100.0
+        var max = -100.0
+        repeat(365) {
+            val eot = AstroEngine.equationOfTimeMinutes(AstroEngine.julianDay(day))
+            min = minOf(min, eot)
+            max = maxOf(max, eot)
+            day += stepMs
+        }
+        // Observed yearly envelope is about -14.3 .. +16.5 minutes.
+        assertTrue("min=$min", min > -15.0)
+        assertTrue("max=$max", max < 17.0)
+    }
+
+    @Test
+    fun meanSolarTime_isUtcPlusLongitude() {
+        // 04:00 UT at 114.0859°E (Shenzhen): +7h36m20.6s.
+        val times = AstroEngine.solarTimes(utc(2026, 10, 20, 4, 0), 114.0859)
+        val expectedMean = 4 * 3600.0 + (114.0859 * 240.0)
+        assertEquals(expectedMean % 86400.0, times.meanSecondsOfDay, 0.5)
+    }
+
+    @Test
+    fun apparentSolarTime_appliesEquationOfTime() {
+        val times = AstroEngine.solarTimes(utc(2026, 10, 20, 4, 0), 114.0859)
+        // EoT around Oct 20 is about +15.5 minutes (sundial ahead).
+        val eotMinutes = times.equationOfTimeSeconds / 60.0
+        assertTrue("eot=$eotMinutes", eotMinutes in 13.0..17.0)
+        val diff = times.apparentSecondsOfDay - times.meanSecondsOfDay
+        assertEquals(eotMinutes * 60.0, diff, 0.5)
+    }
+
+    @Test
+    fun sunTimes_shenzhenMidOctober() {
+        // Shenzhen: published 2026-10-20 sunrise ≈ 06:28 CST, sunset ≈ 17:58 CST.
+        val times = AstroEngine.sunTimes(LocalDate.of(2026, 10, 20), 22.5431, 114.0579)
+        val cst = ZoneOffset.ofHours(8)
+        fun toLocalSeconds(jd: Double?): Double {
+            val zdt = java.time.Instant.ofEpochMilli(
+                AstroEngine.epochMillisFromJulianDay(jd!!),
+            ).atZone(cst)
+            return zdt.hour * 3600.0 + zdt.minute * 60.0 + zdt.second.toDouble()
+        }
+        val riseLocal = toLocalSeconds(times.sunriseJd)
+        val setLocal = toLocalSeconds(times.sunsetJd)
+        println("Shenzhen rise=${AstroEngine.formatClock(riseLocal, false)} set=${AstroEngine.formatClock(setLocal, false)}")
+        // 06:20..06:35, 17:50..18:05 local.
+        assertTrue("rise=$riseLocal", riseLocal in (6 * 3600 + 20 * 60).toDouble()..(6 * 3600 + 35 * 60).toDouble())
+        assertTrue("set=$setLocal", setLocal in (17 * 3600 + 50 * 60).toDouble()..(18 * 3600 + 5 * 60).toDouble())
+
+        val daylight = AstroEngine.daylightSeconds(times.sunriseJd, times.sunsetJd)!!
+        assertTrue("daylight=$daylight", daylight in 11.4 * 3600..11.7 * 3600)
+    }
+
+    @Test
+    fun solarNoonAltitude() {
+        // Beijing: summer solstice noon ~73.6°, winter solstice ~26.7°.
+        val summer = AstroEngine.sunTimes(LocalDate.of(2026, 6, 21), 39.9, 116.4)
+        val winter = AstroEngine.sunTimes(LocalDate.of(2026, 12, 22), 39.9, 116.4)
+        assertEquals(73.6, AstroEngine.solarNoonAltitudeDeg(39.9, summer.transitJd), 0.3)
+        assertEquals(26.7, AstroEngine.solarNoonAltitudeDeg(39.9, winter.transitJd), 0.3)
+        // Tropical site near overhead at the equinoxes.
+        val equinox = AstroEngine.sunTimes(LocalDate.of(2026, 3, 20), 0.0, 0.0)
+        assertEquals(89.9, AstroEngine.solarNoonAltitudeDeg(0.0, equinox.transitJd), 0.3)
+    }
+
+    @Test
+    fun sunTimes_polarRegions() {
+        // Tromsø in late December: polar night. July: midnight sun.
+        val winter = AstroEngine.sunTimes(LocalDate.of(2026, 12, 22), 69.65, 18.96)
+        assertTrue(winter.sunNeverRises)
+        val summer = AstroEngine.sunTimes(LocalDate.of(2026, 7, 1), 69.65, 18.96)
+        assertTrue(summer.sunNeverSets)
+    }
+
+    @Test
+    fun moonPhase_knownAnchors() {
+        // New moon 2000-01-06 18:14 UT (canonical almanac).
+        val newMoon2000 = AstroEngine.moonInfo(utc(2000, 1, 6, 18, 14))
+        assertTrue("illum=${newMoon2000.illumination}", newMoon2000.illumination < 0.005)
+        assertEquals(0, newMoon2000.phaseIndex)
+
+        // 2024 anchors: new Apr 8 18:21 (total solar eclipse), Q1 Apr 15 19:13,
+        // full Sep 18 02:44, last quarter May 1 (~11-12 UT).
+        val newMoon = AstroEngine.moonInfo(utc(2024, 4, 8, 18, 21))
+        assertTrue("illum=${newMoon.illumination}", newMoon.illumination < 0.005)
+        assertEquals(0, newMoon.phaseIndex)
+
+        val firstQ = AstroEngine.moonInfo(utc(2024, 4, 15, 19, 13))
+        assertTrue("fq illum=${firstQ.illumination}", abs(firstQ.illumination - 0.5) < 0.07)
+        assertEquals(2, firstQ.phaseIndex)
+
+        val lastQ = AstroEngine.moonInfo(utc(2024, 5, 1, 12, 0))
+        assertTrue("lq illum=${lastQ.illumination}", abs(lastQ.illumination - 0.5) < 0.07)
+        assertEquals(6, lastQ.phaseIndex)
+
+        val fullMoon = AstroEngine.moonInfo(utc(2024, 9, 18, 2, 44))
+        assertTrue("illum=${fullMoon.illumination}", fullMoon.illumination > 0.995)
+        assertEquals(4, fullMoon.phaseIndex)
+    }
+
+    @Test
+    fun moonAge_inSynodicRange() {
+        val info = AstroEngine.moonInfo(utc(2026, 10, 20, 4, 0))
+        assertTrue("age=${info.ageDays}", info.ageDays in 0.0..29.53)
+        assertTrue(info.illumination in 0.0..1.0)
+    }
+
+    @Test
+    fun formatClock_wrapsAndPads() {
+        assertEquals("00:00:05", AstroEngine.formatClock(5.0))
+        assertEquals("23:59:59", AstroEngine.formatClock(86399.4))
+        assertEquals("01:02", AstroEngine.formatClock(3725.0, withSeconds = false))
+        // Negative offsets wrap around the day.
+        assertEquals("23:00:00", AstroEngine.formatClock(-3600.0))
+    }
+
+    @Test
+    fun formatSignedDuration() {
+        assertEquals("+3m12s", AstroEngine.formatSignedDuration(192.4))
+        assertEquals("−0m45s", AstroEngine.formatSignedDuration(-44.6))
+    }
+}

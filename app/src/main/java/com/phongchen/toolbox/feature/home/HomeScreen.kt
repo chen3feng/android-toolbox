@@ -120,6 +120,7 @@ fun HomeScreen(
             context.packageManager.hasSystemFeature(
                 android.content.pm.PackageManager.FEATURE_CAMERA_ANY,
             )
+        Tool.ASTRO -> true // location-based; works on any device with a GPS fix
     }
 
     Scaffold(

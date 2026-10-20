@@ -217,6 +217,36 @@
     <string name="magnifier_unfreeze">取消定格</string>
     <string name="magnifier_torch">闪光灯</string>
 
+
+    <!-- Sun & Moon astronomy -->
+    <string name="tool_astro">日月天文</string>
+    <string name="subtitle_astro">真太阳时 · 日出日落 · 月相</string>
+    <string name="widget_description_astro">日月天文快捷入口</string>
+    <string name="astro_permission_rationale">太阳时、日出日落和月相需要定位权限，按当前经纬度在本地计算，不收集、不上传位置。</string>
+    <string name="astro_solar_time">太阳时</string>
+    <string name="astro_mean_solar_time">平太阳时</string>
+    <string name="astro_equation_of_time">均时差</string>
+    <string name="astro_sun">日出日落</string>
+    <string name="astro_sunrise">日出</string>
+    <string name="astro_sunset">日落</string>
+    <string name="astro_daylight">昼长</string>
+    <string name="astro_noon_altitude">正午太阳高度</string>
+    <string name="astro_polar_day">极昼：今天太阳不落</string>
+    <string name="astro_polar_night">极夜：今天太阳不升起</string>
+    <string name="astro_moon_phase">月相</string>
+    <string name="astro_illumination">照亮 %1$d%%</string>
+    <string name="astro_note">依据当前 GPS 位置与系统时区在本地计算；真太阳时含均时差修正，月相照亮比例误差约 1%。</string>
+    <string-array name="astro_moon_phases">
+        <item>新月（朔）</item>
+        <item>蛾眉月</item>
+        <item>上弦月</item>
+        <item>盈凸月</item>
+        <item>满月（望）</item>
+        <item>亏凸月</item>
+        <item>下弦月</item>
+        <item>残月</item>
+    </string-array>
+
     <!-- Widget labels (defaults reuse tool names) -->
     <string name="widget_description_compass">指南针快捷入口</string>
     <string name="widget_description_light">亮度计快捷入口</string>

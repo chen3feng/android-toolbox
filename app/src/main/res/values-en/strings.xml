@@ -222,4 +222,32 @@
     <string name="widget_description_timer">Stopwatch shortcut</string>
     <string name="widget_description_measure">Measure tools shortcut</string>
     <string name="widget_description_magnifier">Magnifier shortcut</string>
+    <!-- Sun & Moon astronomy -->
+    <string name="tool_astro">Sun &amp; Moon</string>
+    <string name="subtitle_astro">Solar time, sunrise, moon</string>
+    <string name="widget_description_astro">Sun &amp; Moon shortcut</string>
+    <string name="astro_permission_rationale">Solar time, sunrise/sunset and moon phase need your location. They are computed on-device from your coordinates; nothing is collected or uploaded.</string>
+    <string name="astro_solar_time">Solar time</string>
+    <string name="astro_mean_solar_time">Mean solar time</string>
+    <string name="astro_equation_of_time">Equation of time</string>
+    <string name="astro_sun">Sunrise &amp; sunset</string>
+    <string name="astro_sunrise">Sunrise</string>
+    <string name="astro_sunset">Sunset</string>
+    <string name="astro_daylight">Day length</string>
+    <string name="astro_noon_altitude">Sun altitude at noon</string>
+    <string name="astro_polar_day">Midnight sun: the sun does not set today</string>
+    <string name="astro_polar_night">Polar night: the sun does not rise today</string>
+    <string name="astro_moon_phase">Moon phase</string>
+    <string name="astro_illumination">%1$d%% illuminated</string>
+    <string name="astro_note">Computed on-device from the current GPS fix and system time zone. True solar time includes the equation of time; moon illumination is within about 1%.</string>
+    <string-array name="astro_moon_phases">
+        <item>New moon</item>
+        <item>Waxing crescent</item>
+        <item>First quarter</item>
+        <item>Waxing gibbous</item>
+        <item>Full moon</item>
+        <item>Waning gibbous</item>
+        <item>Last quarter</item>
+        <item>Waning crescent</item>
+    </string-array>
 </resources>

@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.phongchen.toolbox.core.Tool
 import com.phongchen.toolbox.core.ui.ToolboxTheme
 import com.phongchen.toolbox.feature.altimeter.AltimeterScreen
+import com.phongchen.toolbox.feature.astro.AstroScreen
 import com.phongchen.toolbox.feature.audio.AudioScreen
 import com.phongchen.toolbox.feature.compass.CompassScreen
 import com.phongchen.toolbox.feature.flashlight.FlashlightScreen
@@ -97,6 +98,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Tool.MAGNIFIER.route) {
                         MagnifierScreen(onBack = { navController.popBackStack() })
+                    }
+                    composable(Tool.ASTRO.route) {
+                        AstroScreen(onBack = { navController.popBackStack() })
                     }
                 }
             }

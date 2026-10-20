@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#000000">
+    <!-- Sun disc -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M9.2,11.2 m-3.4,0 a3.4,3.4 0 1,0 6.8,0 a3.4,3.4 0 1,0 -6.8,0" />
+    <!-- Rays (stroke style, rounded ends) -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:pathData="M9.2,6.4 L9.2,5 M9.2,21 L9.2,22.4 M3.6,11 L2.4,10.6 M3.4,17.8 L2.4,18.4 M14.8,11 L16,10.6 M4.8,8 L4,7.2" />
+    <!-- Crescent moon, top right (sliver between two offset equal circles) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M18.95,3.23 A2.9,2.9 0 1,0 18.95,8.77 A2.9,2.9 0 1,1 18.95,3.23 Z" />
+</vector>

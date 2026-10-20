@@ -64,3 +64,7 @@ class MeasureWidgetReceiver : GlanceAppWidgetReceiver() {
 class MagnifierWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = EntryWidget(Tool.MAGNIFIER)
 }
+
+class AstroWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = EntryWidget(Tool.ASTRO)
+}

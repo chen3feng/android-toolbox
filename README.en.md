@@ -6,9 +6,9 @@
 
 [中文](README.md)
 
-A fully on-device, ad-free Android utility app with **no network permission**, built with Kotlin and Jetpack Compose Material3 as a single-Activity app. It does what the phone's sensors make possible — magnetic field, sound, vibration, light, location, camera — with every computation performed locally.
+A fully on-device, ad-free Android utility app with **no network permission**, built with Kotlin and Jetpack Compose Material3 as a single-Activity app. It does what the phone's sensors make possible — magnetic field, sound, vibration, light, location, camera, astronomical almanac math — with every computation performed locally.
 
-## Tools (15)
+## Tools (16)
 
 | Tool | Description | Hardware / permission |
 | --- | --- | --- |
@@ -27,6 +27,7 @@ A fully on-device, ad-free Android utility app with **no network permission**, b
 | Stopwatch / countdown | Centisecond timing with laps; 1–15 min countdown with end tone + vibration | VIBRATE |
 | Ruler / protractor / plumb | 30 cm ruler drawn from physical screen DPI; tilt protractor; plumb line | Gravity sensor |
 | Magnifier / mirror | CameraX live preview, pinch zoom, torch, freeze frame, lens switch | Camera, CAMERA |
+| Sun & Moon | Apparent/mean solar time with equation of time, sunrise/sunset, day length, noon sun altitude, lunar phase and illumination | Location |
 
 Tools whose hardware is missing are hidden from the home grid automatically; permission-gated tools show an inline rationale with a Grant button instead of nagging dialogs.
 
