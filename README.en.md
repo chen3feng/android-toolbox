@@ -6,6 +6,10 @@
 
 [中文](README.md)
 
+## Why
+
+While traveling in Qinghai I wanted to check the local altitude, but every app I tried opened with an ad, took ages to start, and asked for unrelated permissions. So I built this toolbox: sensor readings shown instantly on launch, no ads, no network permission, no data collected. It grew into a collection of every practical little tool the phone's sensors make possible.
+
 A fully on-device, ad-free Android utility app with **no network permission**, built with Kotlin and Jetpack Compose Material3 as a single-Activity app. It does what the phone's sensors make possible — magnetic field, sound, vibration, light, location, camera, astronomical almanac math — with every computation performed locally.
 
 ## Tools (16)
