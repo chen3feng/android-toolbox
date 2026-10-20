@@ -1,0 +1,11 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- body with bubble and tick marks cut out -->
+    <path
+        android:fillColor="#FF000000"
+        android:fillType="evenOdd"
+        android:pathData="M3,8h18a2,2 0 0 1 2,2v4a2,2 0 0 1 -2,2h-18a2,2 0 0 1 -2,-2v-4a2,2 0 0 1 2,-2z M12,13.8a1.8,1.8 0 1,0 0.01,0z M5.6,10.5h0.8v3h-0.8z M8.6,10.5h0.8v3h-0.8z M14.6,10.5h0.8v3h-0.8z M17.6,10.5h0.8v3h-0.8z" />
+</vector>

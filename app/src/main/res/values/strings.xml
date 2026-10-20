@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">工具箱</string>
+
+    <!-- Tools -->
+    <string name="tool_compass">指南针</string>
+    <string name="tool_light">亮度计</string>
+    <string name="tool_altimeter">高度计</string>
+    <string name="tool_flashlight">手电筒</string>
+    <string name="tool_level">水平仪</string>
+    <string name="tool_sound">分贝计</string>
+    <string name="tool_speed">速度表</string>
+    <string name="tool_metal">金属探测器</string>
+    <string name="tool_step">计步器</string>
+    <string name="tool_gps">GPS 信息</string>
+    <string name="tool_vibration">震动仪</string>
+    <string name="tool_audio">节拍器</string>
+    <string name="tool_timer">秒表</string>
+    <string name="tool_measure">测量工具</string>
+    <string name="tool_magnifier">放大镜</string>
+
+    <string name="subtitle_compass">方位角 · 磁北/真北</string>
+    <string name="subtitle_light">环境光照度 (lx)</string>
+    <string name="subtitle_altimeter">气压 / GPS 海拔</string>
+    <string name="subtitle_flashlight">闪光灯 / 屏幕白光</string>
+    <string name="subtitle_level">气泡 · 俯仰横滚</string>
+    <string name="subtitle_sound">环境声级 (dB)</string>
+    <string name="subtitle_speed">GPS 速度 · 行程</string>
+    <string name="subtitle_metal">磁场强度 (µT)</string>
+    <string name="subtitle_step">步数 · 距离 · 卡路里</string>
+    <string name="subtitle_gps">坐标 · 卫星 · 海拔</string>
+    <string name="subtitle_vibration">振动加速度</string>
+    <string name="subtitle_audio">节拍器 · 音频发生器</string>
+    <string name="subtitle_timer">秒表 · 倒计时</string>
+    <string name="subtitle_measure">直尺 · 量角器 · 挂线锤</string>
+    <string name="subtitle_magnifier">放大 · 镜子</string>
+
+    <!-- Common -->
+    <string name="common_back">返回</string>
+    <string name="common_add_to_home">添加到桌面</string>
+    <string name="common_grant">授予权限</string>
+    <string name="common_cancel">取消</string>
+    <string name="common_ok">确定</string>
+    <string name="common_reset">重置</string>
+    <string name="common_calibrate">校准</string>
+    <string name="common_unsupported">不支持</string>
+    <string name="pin_unsupported_snackbar">桌面启动器不支持一键添加。请长按桌面空白处，从「窗口小工具」中手动添加。</string>
+    <string name="pin_success">已请求添加到桌面</string>
+
+    <!-- Unsupported -->
+    <string name="unsupported_sensor">此设备没有所需传感器，该功能无法使用。</string>
+    <string name="unsupported_light">此设备没有光线传感器，亮度计无法使用。</string>
+    <string name="unsupported_flash">此设备没有闪光灯，可改用屏幕白光。</string>
+    <string name="unsupported_compass">此设备没有磁力/方向传感器，指南针无法使用。</string>
+    <string name="unsupported_sound">此设备没有麦克风，分贝计无法使用。</string>
+    <string name="unsupported_metal">此设备没有磁力传感器，金属探测器无法使用。</string>
+    <string name="unsupported_step">此设备没有计步传感器，计步器无法使用。</string>
+    <string name="unsupported_vibration">此设备没有加速度传感器，震动仪无法使用。</string>
+    <string name="unsupported_camera">此设备没有相机，放大镜无法使用。</string>
+
+    <!-- Compass -->
+    <string name="compass_north">N</string>
+    <string name="compass_south">S</string>
+    <string name="compass_east">E</string>
+    <string name="compass_west">W</string>
+    <string name="compass_magnetic">磁北</string>
+    <string name="compass_true">真北</string>
+    <string name="compass_low_accuracy">磁场干扰较大，请绕 8 字转动手机进行校准</string>
+    <string name="compass_location_rationale">定位权限仅用于根据 GPS 坐标计算磁偏角，以显示真北方位。</string>
+    <string name="compass_declination">磁偏角 %1$+.1f°</string>
+
+    <!-- Light meter -->
+    <string name="light_lux">照度</string>
+    <string name="light_unit_lx">lx</string>
+    <string name="light_min">最小</string>
+    <string name="light_avg">平均</string>
+    <string name="light_max">最大</string>
+    <string name="light_pause">暂停</string>
+    <string name="light_resume">继续</string>
+    <string name="light_hold">已保持</string>
+
+    <!-- Altimeter -->
+    <string name="unit_meter">米</string>
+    <string name="unit_feet">英尺</string>
+    <string name="pressure_hpa">气压</string>
+    <string name="gps_altitude">GPS 海拔</string>
+    <string name="gps_waiting">等待 GPS 定位…</string>
+    <string name="source_pressure">气压</string>
+    <string name="source_gps">GPS</string>
+    <string name="altimeter_location_rationale">定位权限用于获取 GPS 海拔，并为气压高度计提供磁偏角参考。</string>
+    <string name="altimeter_calibrate_qnh">输入当地海平面气压 (QNH)</string>
+    <string name="altimeter_calibrate_known">输入当前已知海拔</string>
+    <string name="altimeter_qnh_hint">hPa，例如 1013.25</string>
+    <string name="altimeter_known_hint">当前海拔（米）</string>
+    <string name="altimeter_calibrated">已校准</string>
+    <string name="altimeter_reset_standard">恢复标准气压 1013.25</string>
+    <string name="altimeter_apply_qnh">应用 QNH</string>
+    <string name="altimeter_apply_known">按海拔校准</string>
+
+    <!-- Flashlight -->
+    <string name="flashlight_on">开</string>
+    <string name="flashlight_off">关</string>
+    <string name="flashlight_turn_on">打开手电筒</string>
+    <string name="flashlight_turn_off">关闭手电筒</string>
+    <string name="flashlight_camera_rationale">需要相机权限才能控制闪光灯。</string>
+    <string name="flashlight_screen_mode">屏幕白光模式</string>
+    <string name="flashlight_busy">闪光灯当前被其他应用占用。</string>
+
+    <!-- Sound meter -->
+    <string name="sound_level">声级</string>
+    <string name="sound_unit_db">dB</string>
+    <string name="sound_min">最小</string>
+    <string name="sound_avg">平均</string>
+    <string name="sound_max">最大</string>
+    <string name="sound_approx_note">读数为手机麦克风的估算值，建议用已知声源校准</string>
+    <string name="sound_calibrated">已校准（增益 %1$+.1f dB）</string>
+    <string name="sound_mic_rationale">麦克风仅在本页面开启时用于在本地计算分贝值，不录音、不上传，离开页面立即关闭。</string>
+    <string name="sound_mic_busy">麦克风被其他应用占用，暂时无法测量。</string>
+    <string name="sound_chart_title">历史曲线（近 60 秒）</string>
+    <string name="sound_chart_now">现在</string>
+    <string name="sound_calibrate_explanation">播放一个已知声级的声源（例如校准视频显示 65 dB），保持当前环境，在下方输入参考分贝后应用。</string>
+    <string name="sound_calibrate_hint">当前环境参考声级（dB），如 65</string>
+    <string name="sound_reset_calibration">恢复默认校准</string>
+
+    <!-- Speedometer -->
+    <string name="speed_unit_kmh">km/h</string>
+    <string name="speed_unit_mph">mph</string>
+    <string name="unit_km">公里</string>
+    <string name="unit_mile">英里</string>
+    <string name="speed_avg">平均</string>
+    <string name="speed_max">最高</string>
+    <string name="speed_trip">行程</string>
+    <string name="speed_location_rationale">定位权限用于根据 GPS 在本地计算当前速度与行程距离，不收集位置数据。请在室外开阔处使用。</string>
+
+    <!-- Level -->
+    <string name="level_pitch">俯仰</string>
+    <string name="level_roll">横滚</string>
+    <string name="level_level">水平</string>
+    <string name="level_zero_set">将当前角度设为零位</string>
+    <string name="level_zero_reset">清除零位校准</string>
+
+    <!-- Metal detector -->
+    <string name="metal_field">磁场强度</string>
+    <string name="metal_unit_ut">µT</string>
+    <string name="metal_strong">强磁场</string>
+    <string name="metal_normal">正常</string>
+    <string name="metal_chart_title">磁场强度（近 60 秒）</string>
+    <string name="metal_min">最小</string>
+    <string name="metal_avg">平均</string>
+    <string name="metal_max">最大</string>
+    <string name="metal_note">读数为地磁场与附近金属物体叠加的磁场强度，靠近金属时数值会升高。</string>
+
+    <!-- Vibration meter -->
+    <string name="vibration_title">振动加速度</string>
+    <string name="vibration_unit">m/s²</string>
+    <string name="vibration_level_0">静止</string>
+    <string name="vibration_level_1">轻微</string>
+    <string name="vibration_level_2">明显</string>
+    <string name="vibration_level_3">强烈</string>
+    <string name="vibration_waveform">波形</string>
+    <string name="vibration_peak">峰值</string>
+    <string name="vibration_note">将手机放在运转的设备上可测量振动强度，数值为去除重力后的线性加速度。</string>
+
+    <!-- Pedometer -->
+    <string name="step_steps">步数</string>
+    <string name="step_distance">距离</string>
+    <string name="step_kcal">卡路里</string>
+    <string name="step_step_length">步长</string>
+    <string name="step_permission_rationale">活动识别权限仅用于读取手机计步传感器、在本地统计步数，不收集任何数据。</string>
+    <string name="step_note">计步从本次进入页面开始；距离按平均步长 74 cm 估算，仅供参考。</string>
+    <string name="step_reset_session">重新计步</string>
+
+    <!-- GPS info -->
+    <string name="gps_permission_rationale">定位权限用于在本地显示 GPS 坐标、卫星、海拔和速度信息，不收集位置数据。请在室外开阔处使用。</string>
+    <string name="gps_copy">复制</string>
+    <string name="gps_share">分享</string>
+    <string name="gps_open_map">在地图中打开</string>
+    <string name="gps_accuracy">精度</string>
+    <string name="gps_speed_heading">速度 / 方位</string>
+    <string name="gps_satellites">卫星（参与定位 / 可见）</string>
+    <string name="gps_source_time">定位来源与时间</string>
+
+    <!-- Metronome / tone -->
+    <string name="audio_metronome">节拍器</string>
+    <string name="audio_tone">音频发生器</string>
+    <string name="audio_bpm">速度</string>
+    <string name="audio_tap_tempo">击拍定速</string>
+    <string name="audio_volume">音量</string>
+    <string name="audio_wave_sine">正弦波</string>
+    <string name="audio_wave_square">方波</string>
+    <string name="audio_wave_saw">锯齿波</string>
+    <string name="audio_play">播放</string>
+    <string name="audio_stop">停止</string>
+    <string name="audio_hearing_warning">警告：长时间大音量收听可能损伤听力，请勿将扬声器贴近耳朵。</string>
+
+    <!-- Stopwatch / countdown -->
+    <string name="timer_stopwatch">秒表</string>
+    <string name="timer_countdown">倒计时</string>
+    <string name="timer_lap_n">第 %1$d 圈</string>
+    <string name="timer_lap">计圈</string>
+    <string name="timer_start">开始</string>
+    <string name="timer_pause">暂停</string>
+    <string name="timer_finished">时间到！</string>
+
+    <!-- Ruler / protractor / plumb -->
+    <string name="measure_ruler">直尺</string>
+    <string name="measure_protractor">量角器</string>
+    <string name="measure_plumb">挂线锤</string>
+    <string name="measure_set_zero">设为零位</string>
+    <string name="measure_vertical">垂直</string>
+
+    <!-- Magnifier / mirror -->
+    <string name="magnifier_permission_rationale">相机权限用于在本页面实时显示放大画面，切换前置摄像头可当镜子使用。不拍照、不录像、不上传。</string>
+    <string name="magnifier_mirror_mode">镜子模式</string>
+    <string name="magnifier_switch">切换前后摄像头</string>
+    <string name="magnifier_freeze">定格画面</string>
+    <string name="magnifier_unfreeze">取消定格</string>
+    <string name="magnifier_torch">闪光灯</string>
+
+    <!-- Widget labels (defaults reuse tool names) -->
+    <string name="widget_description_compass">指南针快捷入口</string>
+    <string name="widget_description_light">亮度计快捷入口</string>
+    <string name="widget_description_altimeter">高度计快捷入口</string>
+    <string name="widget_description_flashlight">手电筒快捷入口</string>
+    <string name="widget_description_level">水平仪快捷入口</string>
+    <string name="widget_description_sound">分贝计快捷入口</string>
+    <string name="widget_description_speed">速度表快捷入口</string>
+    <string name="widget_description_metal">金属探测器快捷入口</string>
+    <string name="widget_description_step">计步器快捷入口</string>
+    <string name="widget_description_gps">GPS 信息快捷入口</string>
+    <string name="widget_description_vibration">震动仪快捷入口</string>
+    <string name="widget_description_audio">节拍器快捷入口</string>
+    <string name="widget_description_timer">秒表快捷入口</string>
+    <string name="widget_description_measure">测量工具快捷入口</string>
+    <string name="widget_description_magnifier">放大镜快捷入口</string>
+</resources>

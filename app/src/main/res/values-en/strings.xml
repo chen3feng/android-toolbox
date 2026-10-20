@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Toolbox</string>
+
+    <string name="tool_compass">Compass</string>
+    <string name="tool_light">Light Meter</string>
+    <string name="tool_altimeter">Altimeter</string>
+    <string name="tool_flashlight">Flashlight</string>
+    <string name="tool_level">Level</string>
+    <string name="tool_sound">Sound Meter</string>
+    <string name="tool_speed">Speedometer</string>
+    <string name="tool_metal">Metal Detector</string>
+    <string name="tool_step">Pedometer</string>
+    <string name="tool_gps">GPS Info</string>
+    <string name="tool_vibration">Vibration Meter</string>
+    <string name="tool_audio">Metronome</string>
+    <string name="tool_timer">Stopwatch</string>
+    <string name="tool_measure">Measure Tools</string>
+    <string name="tool_magnifier">Magnifier</string>
+
+    <string name="subtitle_compass">Heading, magnetic/true north</string>
+    <string name="subtitle_light">Ambient illuminance (lx)</string>
+    <string name="subtitle_altimeter">Pressure / GPS altitude</string>
+    <string name="subtitle_flashlight">LED / screen light</string>
+    <string name="subtitle_level">Bubble, pitch and roll</string>
+    <string name="subtitle_sound">Ambient sound level (dB)</string>
+    <string name="subtitle_speed">GPS speed, trip distance</string>
+    <string name="subtitle_metal">Magnetic field (µT)</string>
+    <string name="subtitle_step">Steps, distance, calories</string>
+    <string name="subtitle_gps">Coordinates, satellites, altitude</string>
+    <string name="subtitle_vibration">Vibration acceleration</string>
+    <string name="subtitle_audio">Metronome, tone generator</string>
+    <string name="subtitle_timer">Stopwatch, countdown</string>
+    <string name="subtitle_measure">Ruler, protractor, plumb line</string>
+    <string name="subtitle_magnifier">Magnify, mirror</string>
+
+    <string name="common_back">Back</string>
+    <string name="common_add_to_home">Pin to home</string>
+    <string name="common_grant">Grant permission</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_ok">OK</string>
+    <string name="common_reset">Reset</string>
+    <string name="common_calibrate">Calibrate</string>
+    <string name="common_unsupported">Unsupported</string>
+    <string name="pin_unsupported_snackbar">Your launcher does not support one-tap pinning. Long-press an empty spot on the home screen and add the widget manually.</string>
+    <string name="pin_success">Pin request sent</string>
+
+    <string name="unsupported_sensor">This device has no required sensor, so this tool is unavailable.</string>
+    <string name="unsupported_light">This device has no ambient light sensor, so the light meter is unavailable.</string>
+    <string name="unsupported_flash">This device has no LED flash. You can use the white-screen light instead.</string>
+    <string name="unsupported_compass">This device has no magnetic or rotation sensor, so the compass is unavailable.</string>
+    <string name="unsupported_sound">This device has no microphone, so the sound meter is unavailable.</string>
+    <string name="unsupported_metal">This device has no magnetic-field sensor, so the metal detector is unavailable.</string>
+    <string name="unsupported_step">This device has no step-counter sensor, so the pedometer is unavailable.</string>
+    <string name="unsupported_vibration">This device has no accelerometer, so the vibration meter is unavailable.</string>
+    <string name="unsupported_camera">This device has no camera, so the magnifier is unavailable.</string>
+
+    <string name="compass_north">N</string>
+    <string name="compass_south">S</string>
+    <string name="compass_east">E</string>
+    <string name="compass_west">W</string>
+    <string name="compass_magnetic">Magnetic</string>
+    <string name="compass_true">True north</string>
+    <string name="compass_low_accuracy">Magnetic interference. Wave the phone in a figure 8 to calibrate.</string>
+    <string name="compass_location_rationale">Location is used only to derive magnetic declination for true-north headings.</string>
+    <string name="compass_declination">Declination %1$+.1f°</string>
+
+    <string name="light_lux">Illuminance</string>
+    <string name="light_unit_lx">lx</string>
+    <string name="light_min">Min</string>
+    <string name="light_avg">Average</string>
+    <string name="light_max">Max</string>
+    <string name="light_pause">Pause</string>
+    <string name="light_resume">Resume</string>
+    <string name="light_hold">Held</string>
+
+    <string name="unit_meter">m</string>
+    <string name="unit_feet">ft</string>
+    <string name="pressure_hpa">Pressure</string>
+    <string name="gps_altitude">GPS altitude</string>
+    <string name="gps_waiting">Waiting for GPS fix…</string>
+    <string name="source_pressure">Pressure</string>
+    <string name="source_gps">GPS</string>
+    <string name="altimeter_location_rationale">Location is used for GPS altitude and as a reference for pressure calibration.</string>
+    <string name="altimeter_calibrate_qnh">Set local sea-level pressure (QNH)</string>
+    <string name="altimeter_calibrate_known">Set known altitude at current location</string>
+    <string name="altimeter_qnh_hint">hPa, e.g. 1013.25</string>
+    <string name="altimeter_known_hint">Current altitude (meters)</string>
+    <string name="altimeter_calibrated">Calibrated</string>
+    <string name="altimeter_reset_standard">Reset to standard 1013.25 hPa</string>
+    <string name="altimeter_apply_qnh">Apply QNH</string>
+    <string name="altimeter_apply_known">Calibrate altitude</string>
+
+    <string name="flashlight_on">On</string>
+    <string name="flashlight_off">Off</string>
+    <string name="flashlight_turn_on">Turn flashlight on</string>
+    <string name="flashlight_turn_off">Turn flashlight off</string>
+    <string name="flashlight_camera_rationale">Camera permission is needed to control the LED flash.</string>
+    <string name="flashlight_screen_mode">White screen mode</string>
+    <string name="flashlight_busy">The flash is currently used by another app.</string>
+
+    <string name="sound_level">Sound level</string>
+    <string name="sound_unit_db">dB</string>
+    <string name="sound_min">Min</string>
+    <string name="sound_avg">Average</string>
+    <string name="sound_max">Max</string>
+    <string name="sound_approx_note">Estimated from the phone mic; calibrate with a known sound source</string>
+    <string name="sound_calibrated">Calibrated (gain %1$+.1f dB)</string>
+    <string name="sound_mic_rationale">The mic is used only on this screen, on-device, to compute decibels. No audio is recorded or uploaded, and the mic is released when you leave.</string>
+    <string name="sound_mic_busy">The microphone is used by another app; measurement unavailable.</string>
+    <string name="sound_chart_title">History (last 60 s)</string>
+    <string name="sound_chart_now">now</string>
+    <string name="sound_calibrate_explanation">Play a source with a known level (e.g. a calibration video showing 65 dB), keep the current environment, enter the reference level and apply.</string>
+    <string name="sound_calibrate_hint">Reference sound level (dB), e.g. 65</string>
+    <string name="sound_reset_calibration">Reset to default calibration</string>
+
+    <string name="speed_unit_kmh">km/h</string>
+    <string name="speed_unit_mph">mph</string>
+    <string name="unit_km">km</string>
+    <string name="unit_mile">mi</string>
+    <string name="speed_avg">Average</string>
+    <string name="speed_max">Max</string>
+    <string name="speed_trip">Trip</string>
+    <string name="speed_location_rationale">Location is used on-device to derive GPS speed and trip distance; no location data is collected. Use it outdoors with a clear sky view.</string>
+
+    <string name="level_pitch">Pitch</string>
+    <string name="level_roll">Roll</string>
+    <string name="level_level">Level</string>
+    <string name="level_zero_set">Set as zero</string>
+    <string name="level_zero_reset">Reset zero</string>
+
+    <!-- Metal detector -->
+    <string name="metal_field">Magnetic field</string>
+    <string name="metal_unit_ut">µT</string>
+    <string name="metal_strong">Strong field</string>
+    <string name="metal_normal">Normal</string>
+    <string name="metal_chart_title">Magnetic field (last 60 s)</string>
+    <string name="metal_min">Min</string>
+    <string name="metal_avg">Average</string>
+    <string name="metal_max">Max</string>
+    <string name="metal_note">The reading combines Earth\'s magnetic field with nearby metal objects; the value rises as metal approaches.</string>
+
+    <!-- Vibration meter -->
+    <string name="vibration_title">Vibration acceleration</string>
+    <string name="vibration_unit">m/s²</string>
+    <string name="vibration_level_0">Still</string>
+    <string name="vibration_level_1">Slight</string>
+    <string name="vibration_level_2">Noticeable</string>
+    <string name="vibration_level_3">Strong</string>
+    <string name="vibration_waveform">Waveform</string>
+    <string name="vibration_peak">Peak</string>
+    <string name="vibration_note">Place the phone on a running machine to measure vibration. Values are linear acceleration with gravity removed.</string>
+
+    <!-- Pedometer -->
+    <string name="step_steps">Steps</string>
+    <string name="step_distance">Distance</string>
+    <string name="step_kcal">Calories</string>
+    <string name="step_step_length">Step length</string>
+    <string name="step_permission_rationale">Activity recognition is used only to read the phone\'s step sensor and count steps on-device. No data is collected.</string>
+    <string name="step_note">Counting starts when you open this screen; distance uses an estimated average step length of 74 cm and is approximate.</string>
+    <string name="step_reset_session">Restart count</string>
+
+    <!-- GPS info -->
+    <string name="gps_permission_rationale">Location is used on-device to show GPS coordinates, satellites, altitude and speed; no location data is collected. Use it outdoors with a clear sky view.</string>
+    <string name="gps_copy">Copy</string>
+    <string name="gps_share">Share</string>
+    <string name="gps_open_map">Open in maps</string>
+    <string name="gps_accuracy">Accuracy</string>
+    <string name="gps_speed_heading">Speed / heading</string>
+    <string name="gps_satellites">Satellites (used in fix / in view)</string>
+    <string name="gps_source_time">Fix source and time</string>
+
+    <!-- Metronome / tone -->
+    <string name="audio_metronome">Metronome</string>
+    <string name="audio_tone">Tone generator</string>
+    <string name="audio_bpm">Tempo</string>
+    <string name="audio_tap_tempo">Tap tempo</string>
+    <string name="audio_volume">Volume</string>
+    <string name="audio_wave_sine">Sine</string>
+    <string name="audio_wave_square">Square</string>
+    <string name="audio_wave_saw">Sawtooth</string>
+    <string name="audio_play">Play</string>
+    <string name="audio_stop">Stop</string>
+    <string name="audio_hearing_warning">Warning: loud playback for long periods may damage hearing. Keep the speaker away from your ears.</string>
+
+    <!-- Stopwatch / countdown -->
+    <string name="timer_stopwatch">Stopwatch</string>
+    <string name="timer_countdown">Countdown</string>
+    <string name="timer_lap_n">Lap %1$d</string>
+    <string name="timer_lap">Lap</string>
+    <string name="timer_start">Start</string>
+    <string name="timer_pause">Pause</string>
+    <string name="timer_finished">Time\'s up!</string>
+
+    <!-- Ruler / protractor / plumb -->
+    <string name="measure_ruler">Ruler</string>
+    <string name="measure_protractor">Protractor</string>
+    <string name="measure_plumb">Plumb line</string>
+    <string name="measure_set_zero">Set as zero</string>
+    <string name="measure_vertical">Vertical</string>
+
+    <!-- Magnifier / mirror -->
+    <string name="magnifier_permission_rationale">The camera is used only on this screen to show a live magnified view; switch to the front camera to use it as a mirror. Nothing is recorded or uploaded.</string>
+    <string name="magnifier_mirror_mode">Mirror mode</string>
+    <string name="magnifier_switch">Switch front/back camera</string>
+    <string name="magnifier_freeze">Freeze frame</string>
+    <string name="magnifier_unfreeze">Unfreeze</string>
+    <string name="magnifier_torch">Flashlight</string>
+
+    <string name="widget_description_compass">Compass shortcut</string>
+    <string name="widget_description_light">Light meter shortcut</string>
+    <string name="widget_description_altimeter">Altimeter shortcut</string>
+    <string name="widget_description_flashlight">Flashlight shortcut</string>
+    <string name="widget_description_level">Level shortcut</string>
+    <string name="widget_description_sound">Sound meter shortcut</string>
+    <string name="widget_description_speed">Speedometer shortcut</string>
+    <string name="widget_description_metal">Metal detector shortcut</string>
+    <string name="widget_description_step">Pedometer shortcut</string>
+    <string name="widget_description_gps">GPS info shortcut</string>
+    <string name="widget_description_vibration">Vibration meter shortcut</string>
+    <string name="widget_description_audio">Metronome shortcut</string>
+    <string name="widget_description_timer">Stopwatch shortcut</string>
+    <string name="widget_description_measure">Measure tools shortcut</string>
+    <string name="widget_description_magnifier">Magnifier shortcut</string>
+</resources>
