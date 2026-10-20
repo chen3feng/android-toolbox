@@ -21,6 +21,10 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # The action's default includes the retired 'tools' package, which fails
+          # on current cmdline-tools; platform-tools and licenses are what builds need.
+          packages: 'platform-tools'
 
       - name: Gradle dependency verification
         uses: gradle/actions/setup-gradle@v4
