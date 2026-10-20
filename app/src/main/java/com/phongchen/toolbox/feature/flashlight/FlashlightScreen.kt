@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,7 +58,8 @@ fun FlashlightScreen(onBack: () -> Unit) {
                 PackageManager.PERMISSION_GRANTED,
         )
     }
-    var whiteScreen by remember { mutableStateOf(false) }
+    // Survives auto-rotate Activity recreation so the white screen doesn't turn off.
+    var whiteScreen by rememberSaveable { mutableStateOf(false) }
     var busyMessage by remember { mutableStateOf<String?>(null) }
     val busyText = stringResource(R.string.flashlight_busy)
 

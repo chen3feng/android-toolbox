@@ -16,7 +16,11 @@ data class MeasureUiState(
     val pitchDeg: Float = 0f,
     val rollDeg: Float = 0f,
     val zeroPitch: Float = 0f,
-    val zeroRoll: Float = 0f,
+    /** Plumb-line deviation for an upright phone, atan2(gx, -gy). */
+    val plumbDeg: Float = 0f,
+    /** False when the phone is lying flat: a plumb line has no meaning on the screen. */
+    val plumbValid: Boolean = false,
+    val zeroPlumb: Float = 0f,
 )
 
 class MeasureViewModel(app: Application) : ContainerViewModel(app) {
@@ -27,20 +31,65 @@ class MeasureViewModel(app: Application) : ContainerViewModel(app) {
     private val _uiState = MutableStateFlow(MeasureUiState())
     val uiState = _uiState.asStateFlow()
 
+    private var smoothedPlumb = 0f
+
     init {
         viewModelScope.launch {
             sensorManager.sensorFlow(sensorType, SensorManager.SENSOR_DELAY_GAME).collect { sample ->
                 val tilt = LevelEngine.tilt(sample.values)
-                _uiState.update { it.copy(pitchDeg = tilt.pitchDeg, rollDeg = tilt.rollDeg) }
+                val plumb = uprightPlumb(sample.values)
+                smoothedPlumb = if (plumb.second) {
+                    // Angle-aware behaviour is unnecessary in the narrow upright range.
+                    smoothedPlumb + (plumb.first - smoothedPlumb) * PLUMB_SMOOTH_WEIGHT
+                } else {
+                    plumb.first
+                }
+                _uiState.update {
+                    it.copy(
+                        pitchDeg = tilt.pitchDeg,
+                        rollDeg = tilt.rollDeg,
+                        plumbDeg = smoothedPlumb,
+                        plumbValid = plumb.second,
+                    )
+                }
             }
         }
     }
 
-    fun setZero() {
-        _uiState.update { it.copy(zeroPitch = it.pitchDeg, zeroRoll = it.rollDeg) }
+    /**
+     * Plumb deviation for a phone held UPRIGHT (screen vertical): the gravity vector
+     * projected onto the screen plane, angle = atan2(gx, -gy). Using the flat-device
+     * roll atan2(gx, gz) here is singular when upright — tiny tilts read as tens of
+     * degrees, and a face-down phone (gz < 0) still shows a vertical line.
+     *
+     * @return (degrees, valid) where valid means the phone is roughly upright.
+     */
+    private fun uprightPlumb(gravity: FloatArray): Pair<Float, Boolean> {
+        val magnitude = kotlin.math.sqrt(
+            gravity[0] * gravity[0] + gravity[1] * gravity[1] + gravity[2] * gravity[2],
+        )
+        if (magnitude == 0f) return 0f to false
+        val gx = gravity[0] / magnitude
+        val gy = gravity[1] / magnitude
+        val uprightComponent = -gy // ≈ 1 when held upright with the top edge up
+        val angle = Math.toDegrees(kotlin.math.atan2(gx, uprightComponent).toDouble()).toFloat()
+        // Within ~66° of upright (upright component > 0.4) the plumb line is meaningful.
+        return angle to (uprightComponent > 0.4f)
+    }
+
+    fun setProtractorZero() {
+        _uiState.update { it.copy(zeroPitch = it.pitchDeg) }
+    }
+
+    fun setPlumbZero() {
+        _uiState.update { it.copy(zeroPlumb = it.plumbDeg) }
     }
 
     fun resetZero() {
-        _uiState.update { it.copy(zeroPitch = 0f, zeroRoll = 0f) }
+        _uiState.update { it.copy(zeroPitch = 0f, zeroPlumb = 0f) }
+    }
+
+    companion object {
+        private const val PLUMB_SMOOTH_WEIGHT = 0.2f
     }
 }

@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,8 +60,9 @@ fun MeasureScreen(
     viewModel: MeasureViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
-    var mode by remember { mutableStateOf(MeasureMode.RULER) }
-    var metric by remember { mutableStateOf(true) }
+    // rememberSaveable keeps the selected tab and unit across screen rotation.
+    var mode by rememberSaveable { mutableStateOf(MeasureMode.RULER) }
+    var metric by rememberSaveable { mutableStateOf(true) }
 
     ToolScaffold(tool = Tool.MEASURE, onBack = onBack) { padding ->
         Column(
@@ -95,19 +97,29 @@ fun MeasureScreen(
                 )
                 MeasureMode.PROTRACTOR -> AngleSurface(
                     angle = MeasureEngine.relativeAngle(state.pitchDeg, state.zeroPitch),
-                    onSetZero = viewModel::setZero,
+                    onSetZero = viewModel::setProtractorZero,
                     onResetZero = viewModel::resetZero,
                     modifier = Modifier.weight(1f),
                 ) { angle, lineColor ->
                     ProtractorDial(angle, lineColor)
                 }
-                MeasureMode.PLUMB -> AngleSurface(
-                    angle = MeasureEngine.relativeAngle(state.rollDeg, state.zeroRoll),
-                    onSetZero = viewModel::setZero,
-                    onResetZero = viewModel::resetZero,
-                    modifier = Modifier.weight(1f),
-                ) { angle, lineColor ->
-                    PlumbLine(angle, lineColor)
+                MeasureMode.PLUMB -> if (state.plumbValid) {
+                    AngleSurface(
+                        angle = MeasureEngine.relativeAngle(state.plumbDeg, state.zeroPlumb),
+                        onSetZero = viewModel::setPlumbZero,
+                        onResetZero = viewModel::resetZero,
+                        modifier = Modifier.weight(1f),
+                    ) { angle, lineColor ->
+                        PlumbLine(angle, lineColor)
+                    }
+                } else {
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = stringResource(R.string.measure_plumb_upright),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }

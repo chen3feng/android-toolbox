@@ -28,6 +28,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,7 +58,7 @@ fun CompassScreen(
     viewModel: CompassViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
-    var selectedTab by remember { mutableIntStateOf(TAB_MAGNETIC) }
+    var selectedTab by rememberSaveable { mutableIntStateOf(TAB_MAGNETIC) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { result ->

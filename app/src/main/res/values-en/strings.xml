@@ -271,4 +271,5 @@
     <string name="compass_body_sun">the Sun</string>
     <string name="compass_body_moon">the Moon</string>
     <string name="compass_moon_azimuth">Moon  az / alt</string>
+    <string name="measure_plumb_upright">Hold the phone upright to use the plumb line</string>
 </resources>

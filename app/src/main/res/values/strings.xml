@@ -285,4 +285,5 @@
     <string name="compass_body_sun">太阳</string>
     <string name="compass_body_moon">月亮</string>
     <string name="compass_moon_azimuth">月亮  方位/高度</string>
+    <string name="measure_plumb_upright">请将手机竖直握持使用挂线锤</string>
 </resources>
