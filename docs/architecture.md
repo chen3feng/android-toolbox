@@ -20,6 +20,11 @@
 
 通用 Compose 组件在 `core/ui/`：`ToolScaffold`、`ActionBanner`、`UnsupportedPanel`、滚动折线图 `RollingLineChart`（数据点 `ChartPoint(timeMs, value)`）。
 
+天文工具（`feature/astro/`）在标准三件套之外有两个可复用的模式：
+
+- **时间驱动 + 硬件驱动双源**：ViewModel 同时收集 `LocationProvider.fixes()`（只存最新经纬度）和一个每秒发射的 `ticker()` Flow；每次 tick 用「当前时间 × 经纬度」重算 UI。日出日落只依赖日期与位置，用 `localDate + lat/lon` 做内存缓存避免每秒重算。
+- **Engine 只接收 epochMillis / 经纬度等纯参数**，不接触 `Calendar`、Android Framework 或设备时区之外的东西；时区/本地化的换算放在 ViewModel/Screen 层（`Instant.atZone(ZoneId.systemDefault())`），所以儒略日、均时差、日出日落、月相全部能直接 JVM 单测。月相的八相名称走 `res/values/strings.xml` 的 `<string-array>`（英文同步放 `values-en`），而不是硬编码。
+
 ## 3. 核心模块（core/）
 
 - `Tool.kt` —— **唯一注册表**。枚举条目不只是 route，还携带标题/副标题/图标字符串资源、图标 drawable、widget 描述与 widget Receiver 类。首页网格、导航、深链合法性（`Tool.fromRoute`）、首页排序（`Tool.orderedBy`，新版本新增工具自动追加到末尾）全部由它生成。
