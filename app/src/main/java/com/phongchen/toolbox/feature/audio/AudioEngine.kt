@@ -38,7 +38,7 @@ class AudioEngine {
 
     private enum class Mode { IDLE, METRONOME, TONE }
 
-    fun startMetronome() = synchronized(lock) {
+    fun startMetronome(): Unit = synchronized(lock) {
         if (mode == Mode.METRONOME) return
         stopLocked()
         mode = Mode.METRONOME
@@ -48,7 +48,7 @@ class AudioEngine {
         worker = Thread({ runMetronome(audioTrack) }, "toolbox-metronome").apply { start() }
     }
 
-    fun startTone() = synchronized(lock) {
+    fun startTone(): Unit = synchronized(lock) {
         if (mode == Mode.TONE) return
         stopLocked()
         mode = Mode.TONE
@@ -79,7 +79,7 @@ class AudioEngine {
             AudioMath.SAMPLE_RATE,
             AudioFormat.CHANNEL_OUT_MONO,
             AudioFormat.ENCODING_PCM_16BIT,
-        ).coerceAtLeast(AudioMath.SAMPLE_RATE) // ~1 s floor
+        )
         return AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()
@@ -105,23 +105,30 @@ class AudioEngine {
         val click = AudioMath.clickSamples(900.0, durationMs = 50, gain = 0.6)
         var beat = 0
         while (mode == Mode.METRONOME) {
-            val start = System.nanoTime()
-            val buffer = if (beat % beatsPerMeasure == 0) downbeat else click
+            // Render a CONTINUOUS beat cell: click followed by silence padding, exactly
+            // one beat interval long. Blocking writes pace us against the audio clock,
+            // so timing is sample-accurate even before the output finishes priming and
+            // queued clicks can never burst out in a clump.
+            val cellSamples = AudioMath.SAMPLE_RATE.toLong() * 60L / bpm.coerceAtLeast(1)
+            val cell = ShortArray(cellSamples.toInt())
+            val accent = if (beat % beatsPerMeasure == 0) downbeat else click
+            accent.copyInto(cell, endIndex = minOf(accent.size, cell.size))
             audioTrack.setVolume(volume)
-            audioTrack.write(buffer, 0, buffer.size)
+            if (!writeAll(audioTrack, cell)) return
             onBeat?.invoke(beat % beatsPerMeasure)
             beat++
-            val nextAt = start + AudioMath.metronomeIntervalNanos(bpm)
-            while (mode == Mode.METRONOME) {
-                val remaining = (nextAt - System.nanoTime()) / 1_000_000
-                if (remaining <= 0) break
-                try {
-                    Thread.sleep(remaining.coerceAtMost(5))
-                } catch (e: InterruptedException) {
-                    return
-                }
-            }
         }
+    }
+
+    /** Blocking write of the whole array; false if playback was stopped/interrupted. */
+    private fun writeAll(audioTrack: AudioTrack, data: ShortArray): Boolean {
+        var offset = 0
+        while (mode != Mode.IDLE && offset < data.size) {
+            val written = audioTrack.write(data, offset, data.size - offset)
+            if (written < 0) return false
+            offset += written
+        }
+        return mode != Mode.IDLE
     }
 
     private fun runTone(audioTrack: AudioTrack) {
@@ -135,7 +142,7 @@ class AudioEngine {
                 phase += increment
                 if (phase >= 2.0 * PI) phase -= 2.0 * PI
             }
-            audioTrack.write(chunk, 0, chunk.size)
+            if (!writeAll(audioTrack, chunk)) return
         }
     }
 }
