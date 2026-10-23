@@ -74,10 +74,11 @@ class MeasureViewModel(app: Application) : ContainerViewModel(app) {
         if (magnitude == 0f) return 0f to false
         val gx = gravity[0] / magnitude
         val gy = gravity[1] / magnitude
-        // In normal portrait the screen-down vector is (gx, gy); when the phone is held
-        // upside down (gy < 0) the system rotates the UI 180°, so screen-down maps to
-        // (-gx, -gy) — flip both, which also reads 0 when the inverted phone is plumb.
-        val downX = if (gy < 0f) -gx else gx
+        // The bob points at world-down expressed in the phone frame, but when the screen
+        // tilts clockwise (right edge down, gx > 0) world-down sits on the frame LEFT:
+        // negate x. In reverse portrait (gy < 0) the UI is rotated 180° by the system,
+        // flipping both screen axes.
+        val downX = if (gy < 0f) gx else -gx
         val downY = kotlin.math.abs(gy)
         val angle = Math.toDegrees(kotlin.math.atan2(downX, downY).toDouble()).toFloat()
         // Meaningful whenever the screen is roughly vertical, either edge up.
